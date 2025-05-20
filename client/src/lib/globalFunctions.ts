@@ -1,4 +1,4 @@
-import { type PostData } from '../components/dashboard/PostPreviewPanel';
+import { PostData } from "@/components/EditPost";
 
 // Global function to check if we're on the create page
 function isOnCreatePage(): boolean {
