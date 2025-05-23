@@ -9,6 +9,7 @@ import linkedinIcon from '../assets/icons/linkedin.png';
 import facebookIcon from '../assets/icons/facebook.png';
 import youtubeIcon from '../assets/icons/youtube.png';
 import ActionScreenHeader from './ActionScreenHeader.tsx';
+import { CalendarView } from '@/types/post';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('past');
@@ -16,7 +17,7 @@ const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(4); // 0-based index for May
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [timeframe, setTimeframe] = useState('month'); // Track 'month' or 'week'
+  const [timeframe, setTimeframe] = useState<CalendarView>('month'); // Track 'month' or 'week'
   const [weekStart, setWeekStart] = useState(() => {
     const today = new Date('2025-05-20'); // Updated to current date
     const dayOfWeek = today.getDay();
@@ -40,7 +41,7 @@ const Dashboard = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const handlePrevMonth = () => {
+  const handlePrevPeriod = () => {
     if (timeframe === 'month') {
       if (selectedMonth === 0) {
         setSelectedMonth(11);
@@ -58,7 +59,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleNextMonth = () => {
+  const handleNextPeriod = () => {
     if (timeframe === 'month') {
       if (selectedMonth === 11) {
         setSelectedMonth(0);
@@ -193,16 +194,17 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="w-full h-full p-5 border border-gray-300 rounded-lg bg-white overflow-y-auto box-border relative [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="w-full h-full p-5 border border-gray-300 bg-white overflow-y-auto box-border relative [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <ActionScreenHeader
+        title="Dashboard"
         timeframe={timeframe}
         setTimeframe={setTimeframe}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
         weekStart={weekStart}
         weekEnd={weekEnd}
-        handlePrevMonth={handlePrevMonth}
-        handleNextMonth={handleNextMonth}
+        handlePrevPeriod={handlePrevPeriod}
+        handleNextPeriod={handleNextPeriod}
       />
       {selectedPost && (
         <div className="flex gap-[10px] justify-between">

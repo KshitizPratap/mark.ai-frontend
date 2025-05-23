@@ -21,9 +21,9 @@ export const doPOST = async function (url:String, data:any) {
   }
 };
 
-export const doDELETE = async function (url:string) {
+export const doDELETE = async function (url:string, data?: any) {
   try {
-    const response = await apiHandler(url, API_METHODS.DELETE)
+    const response = await apiHandler(url, API_METHODS.DELETE, data)
     return response;
   } catch (err:any) {
     throw err;

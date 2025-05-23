@@ -15,6 +15,8 @@ interface PostState {
   token?: string;
   setToken: (token: string) => void;
   logout: () => void;
+  isVerifying: boolean;
+  setIsVerifying: (isVerifying: boolean) => void;
 }
 
 export const useAuthStore = create<PostState>((set) => ({
@@ -30,5 +32,7 @@ export const useAuthStore = create<PostState>((set) => ({
     set({isAuth: false});
     removeValue(STORAGE_KEYS.TOKEN);
     resetPostState();
-  }
+  },
+  isVerifying: false,
+  setIsVerifying: (isVerifying: boolean) => set({isVerifying})
 }));

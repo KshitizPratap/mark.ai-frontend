@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { CalendarIcon, ChevronDown } from "lucide-react";
-import DatePickerButton from "./date-picker-button";
 import ScheduleActionButton from "./schedule-action-button";
 import { usePostStore } from "@/store/usePostStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { User } from "@/types";
+import DatePickerWithButton from "./date-picker-with-button";
+import { Trash2 } from 'lucide-react';
 
 // Define types for component props
 interface SocialMediaPostPreviewProps {
@@ -23,11 +23,10 @@ interface SocialMediaPostPreviewProps {
   imageUrl?: string;
 
   // Scheduling options
-  scheduledDate?: string;
+  scheduledDate?: Date;
   onSchedule?: () => void;
-  onDateChange?: () => void;
-  onToggleOptions?: () => void; // For dropdown toggle
-  buttonType?: "schedule" | "draft"; // Button type to display
+  onDraft?: () => void;
+  onDateChange: (date: Date) => void;
 
   // Customization options
   hideHeader?: boolean;
@@ -37,6 +36,7 @@ interface SocialMediaPostPreviewProps {
   // Add these props for upload
   onImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploadedImageFile?: File | null;
+  onImageDelete?: () => void;
 }
 
 /**
@@ -52,9 +52,8 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   imageUrl,
   scheduledDate,
   onSchedule,
+  onDraft,
   onDateChange,
-  onToggleOptions,
-  buttonType = "schedule",
 
   // Customization options
   hideHeader = false,
@@ -64,8 +63,10 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   // Add these props for upload
   onImageUpload,
   uploadedImageFile,
+  onImageDelete
 }) => {
-  const { postContent, postHashtags: hashtags, postTitle } = usePostStore();
+  const {createPost} = usePostStore();
+  const {content: postContent, hashtag, title: postTitle} = createPost;
   const { userDetails= {} } = useAuthStore();
   const { name: userName } = userDetails as User;
   const userInitials = userName.split(" ")[0][0] + userName.split(" ")?.pop()?.[0];
@@ -111,6 +112,9 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   React.useEffect(() => {
     setImageError(false);
   }, [imageUrl]);
+
+  // For hashtags display:
+  const hashtags = hashtag ? hashtag.split(' ').filter(Boolean) : [];
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -173,18 +177,31 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
               </div>
             ) : (
               /* If image is uploaded, show it (local preview takes precedence) */
-              <img
-                src={localPreviewUrl || imageUrl}
-                alt="Post visual content"
-                className="object-cover h-full w-full"
-                onError={() => setImageError(true)}
-                onLoad={() => setImageError(false)}
-              />
+              <div className="relative w-full h-full">
+                <img
+                  src={localPreviewUrl || imageUrl}
+                  alt="Post visual content"
+                  className="object-contain h-full w-full"
+                  onError={() => setImageError(true)}
+                  onLoad={() => setImageError(false)}
+                />
+                {onImageDelete && (
+                  <button 
+                    className="absolute top-2 right-2 p-1 bg-gray-800/80 rounded-full hover:bg-gray-800 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onImageDelete();
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
           {/* Right side - Post Text Content */}
-          <div className="md:w-1/2 p-5">
+          <div className="md:w-1/2 p-5 max-h-[280px] overflow-y-auto">
             {/* Post Title - with placeholder if missing */}
             {postTitle ? (
               <h2 className="font-bold text-lg text-gray-900 mb-2">
@@ -208,7 +225,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
 
             {/* Hashtags - only show if there are any */}
             {hashtags && hashtags.length > 0 && (
-              <div className="text-blue-500 text-sm space-x-1">
+              <div className="text-blue-500 text-sm space-x-1 flex flex-wrap">
                 {hashtags.map((tag, index) => (
                   <span key={index}>#{tag}</span>
                 ))}
@@ -221,12 +238,16 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
       {/* Footer with Schedule Options */}
       {!hideFooter && (
         <div className="max-w-2xl mx-auto mt-4 flex items-center justify-end flex-wrap gap-4 w-full">
-          <DatePickerButton date={scheduledDate || ""} onClick={onDateChange} />
-          <ScheduleActionButton
-            onSchedule={onSchedule}
-            onToggleOptions={onToggleOptions}
-            buttonType={buttonType}
-          />
+          <div className="flex items-center gap-2">
+            <DatePickerWithButton
+              date={scheduledDate || new Date()}
+              onDateChange={(date) => onDateChange(date)}
+            />
+            <ScheduleActionButton
+              onSchedule={onSchedule}
+              onDraft={onDraft}
+            />
+          </div>
         </div>
       )}
     </div>

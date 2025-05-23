@@ -1,4 +1,4 @@
-import { Post } from '@/types/calendar';
+import { Post } from '@/types/post';
 
 export const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const FULL_DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -141,7 +141,7 @@ export const formatTime24Hour = (date: Date): string => {
 // Get posts for a specific day
 export const getPostsForDay = (posts: Post[], date: Date): Post[] => {
   return posts.filter(post => {
-    return isSameDay(post.scheduledDate, date);
+    return isSameDay(post.scheduleDate, date);
   });
 };
 
@@ -165,8 +165,8 @@ export const formatHourLabel = (hour: number): string => {
 
 // Calculate position and height for a post in week view
 export const calculatePostPosition = (post: Post): { top: number; height: number } => {
-  const hour = post.scheduledDate.getHours();
-  const minute = post.scheduledDate.getMinutes();
+  const hour = post.scheduleDate.getHours();
+  const minute = post.scheduleDate.getMinutes();
   
   const top = hour * 60 + minute; // Position in minutes from top
   const height = 30; // Fixed height of 30 minutes for each post
@@ -176,8 +176,8 @@ export const calculatePostPosition = (post: Post): { top: number; height: number
 
 // Check if posts overlap in time
 export const doPostsOverlap = (post1: Post, post2: Post): boolean => {
-  const time1 = post1.scheduledDate.getTime();
-  const time2 = post2.scheduledDate.getTime();
+  const time1 = post1.scheduleDate.getTime();
+  const time2 = post2.scheduleDate.getTime();
   
   // Consider posts overlapping if they are within 30 minutes of each other
   const timeWindow = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -190,11 +190,11 @@ export const positionPostsForWeek = (posts: Post[]): Post[] => {
   
   // Sort posts by scheduled time
   const sortedPosts = [...posts].sort((a, b) => 
-    a.scheduledDate.getTime() - b.scheduledDate.getTime()
+    a.scheduleDate.getTime() - b.scheduleDate.getTime()
   );
   
   // Create a map to track horizontal position for each post
-  const postPositions = new Map<string | number, number>();
+  const postPositions = new Map<string, number>();
   
   // For each post, find the first available horizontal position
   sortedPosts.forEach(post => {
@@ -208,7 +208,7 @@ export const positionPostsForWeek = (posts: Post[]): Post[] => {
       // Check against all posts that have been positioned already
       for (const [postId, position] of Array.from(postPositions)) {
         // Find the post object for this id
-        const otherPost = sortedPosts.find(p => p.postId === postId);
+        const otherPost = sortedPosts.find(p => p._id === postId);
         if (!otherPost) continue;
         
         // If posts overlap in time and are using the same horizontal position
@@ -221,12 +221,12 @@ export const positionPostsForWeek = (posts: Post[]): Post[] => {
     }
     
     // Assign the position
-    postPositions.set(post.postId, horizontalPosition);
+    postPositions.set(post._id || '', horizontalPosition);
   });
   
   // Return the posts with their positions
   return sortedPosts.map(post => ({
     ...post,
-    horizontalPosition: postPositions.get(post.postId) || 0
+    horizontalPosition: postPositions.get(post._id || '') || 0
   }));
 };

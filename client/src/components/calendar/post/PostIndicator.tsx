@@ -1,5 +1,5 @@
 import React from 'react';
-import { Post } from '@/types/calendar';
+import { Post } from '@/types/post';
 import { formatTime12Hour } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
 
@@ -10,14 +10,14 @@ interface PostIndicatorProps {
 
 const PostIndicator: React.FC<PostIndicatorProps> = ({ post, onClick }) => {
   const handleClick = () => {
-    onClick(post.postId);
+    onClick(post._id || '');
   };
 
-  const postType = post.status === 'scheduled' ? 'scheduled' : 'draft';
+  const postType = post.status === 'schedule' ? 'scheduled' : 'draft';
   
-  // Get first image from mediaUrls or use sample image
-  const imageUrl = post.mediaUrls.length > 0 
-    ? post.mediaUrls[0] 
+  // Get first image from mediaUrl or use sample image
+  const imageUrl = post.mediaUrl.length > 0 
+    ? post.mediaUrl[0] 
     : 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=100&h=100';
 
   return (
@@ -33,7 +33,7 @@ const PostIndicator: React.FC<PostIndicatorProps> = ({ post, onClick }) => {
         alt={post.title}
         className="w-4 h-4 rounded-sm object-cover"
       />
-      <span className="post-time text-xs">{formatTime12Hour(post.scheduledDate)}</span>
+      <span className="post-time text-xs">{formatTime12Hour(post.scheduleDate)}</span>
     </div>
   );
 };

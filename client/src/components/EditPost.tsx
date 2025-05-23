@@ -1,42 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Edit, Trash2, PlusCircle, CalendarIcon, CheckSquare, XSquare, ChevronDown, Image } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Edit, Trash2, PlusCircle, CheckSquare, XSquare, Image, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { format, parse, addDays } from 'date-fns';
-import { DayPicker } from 'react-day-picker';
-import { PlatformName } from '@/types';
 import { useEditPostContext } from '@/context/EditPostProvider';
+import ScheduleActionButton from "@/components/ui/schedule-action-button";
+import DatePickerWithButton from "./ui/date-picker-with-button";
+import { Post, PlatformType, PostStatus } from '@/types/post';
+import { ENABLE_AI_GENERATE } from '@/commons/constant';
 
-export interface PostData {
-  postId: string | number;
-  userId: string | number;
-  title: string;
-  content: string;
-  hashtag: string;
-  hashtags?: string[];
-  mediaUrls: string[];
-  socialPlatforms: {
-    facebook: boolean;
-    instagram: boolean;
-    twitter: boolean;
-    linkedin: boolean;
-  };
-  status: 'draft' | 'scheduled' | 'published' | 'failed';
-  scheduledDate: string;
-  postType: {
-    post: boolean;
-    story: boolean;
-    reel: boolean;
-  };
-}
+// Define platform values
+const PLATFORM_VALUES: PlatformType[] = [
+  'facebook',
+  'instagram',
+  'threads',
+  'twitter',
+  'youtube',
+];
 
 // Define component props
 interface EditPostProps {
   isOpen: boolean;
   onClose: () => void;
-  post: PostData;
-  onSave: (updatedPost: PostData) => void;
-  onDelete?: () => void;
+  post: Post;
+  onSave: (updatedPost: Post) => void;
+  onDelete: () => void;
   onGenerate?: (prompt: string) => void;
 }
 
@@ -49,43 +36,25 @@ const EditPost: React.FC<EditPostProps> = ({
   onGenerate
 }) => {
   const { timeZoneLabel = 'GMT+00:00' } = useEditPostContext();
-  // Component state
-  const [editedPost, setEditedPost] = useState<PostData>(post);
-  const [activeTab, setActiveTab] = useState<'content' | 'schedule'>('content');
+  const [editedPost, setEditedPost] = useState<Post>(post);
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [generatePrompt, setGeneratePrompt] = useState<string>('');
-  const [showGeneratePrompt, setShowGeneratePrompt] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedButtonType, setSelectedButtonType] = useState<'schedule' | 'draft'>('schedule');
+  const [isEditing, setIsEditing] = useState<boolean>(post.status === 'draft');
   
   // Calendar and time selection state
-  const [date, setDate] = useState<Date>(new Date(post.scheduledDate));
-  const [inputHour, setInputHour] = useState<string>(format(new Date(post.scheduledDate), 'h'));
-  const [inputMinute, setInputMinute] = useState<string>(format(new Date(post.scheduledDate), 'mm'));
-  const [inputAmPm, setInputAmPm] = useState<string>(format(new Date(post.scheduledDate), 'a').toUpperCase());
+  const [date, setDate] = useState<Date>(new Date(post.scheduleDate));
   
-  // Hour/minute options for dropdowns
-  const hourOptions = Array.from({ length: 12 }, (_, i) => ((i + 1).toString()));
-  const minuteOptions = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
-  const allMinuteOptions = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
-  
-  const calendarRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Update character count when content changes
   useEffect(() => {
     setCharacterCount(editedPost.content.length);
   }, [editedPost.content]);
 
-  // Initialize edited post when post prop changes
   useEffect(() => {
     if (post) {
       setEditedPost(post);
       // Initialize date and time fields
-      const postDate = new Date(post.scheduledDate);
+      const postDate = new Date(post.scheduleDate);
       
       // Convert to local time based on timezone offset
       const timeZoneOffset = timeZoneLabel.replace('GMT', '');
@@ -95,41 +64,12 @@ const EditPost: React.FC<EditPostProps> = ({
       // Adjust the time based on timezone
       const localDate = new Date(postDate.getTime() + (offsetInMinutes * 60 * 1000));
       
-      setDate(localDate);
-      setInputHour(format(localDate, 'h'));
-      setInputMinute(format(localDate, 'mm'));
-      setInputAmPm(format(localDate, 'a').toUpperCase());
+      setDate(postDate);
+      // Set isEditing based on post status
+      setIsEditing(post.status === 'draft');
     }
   }, [post, timeZoneLabel]);
   
-  // Handle clicks outside calendar and dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        setIsCalendarOpen(false);
-      }
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsCalendarOpen(false);
-        setIsDropdownOpen(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscapeKey);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, []);
-
-  // Handle text input changes
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditedPost(prev => ({
@@ -138,50 +78,38 @@ const EditPost: React.FC<EditPostProps> = ({
     }));
   };
   
-  // Handle platform toggle
-  const handlePlatformToggle = (platform: keyof typeof editedPost.socialPlatforms) => {
+  const handlePlatformToggle = (platform: PlatformType) => {
     setEditedPost(prev => ({
       ...prev,
-      socialPlatforms: {
-        ...prev.socialPlatforms,
-        [platform]: !prev.socialPlatforms[platform]
-      }
+      platform: prev.platform.includes(platform)
+        ? prev.platform.filter(p => p !== platform)
+        : [...prev.platform, platform]
     }));
   };
 
-  // Handle post type toggle
-  const handlePostTypeToggle = (type: 'post' | 'story' | 'reel') => {
+  const handlePostTypeToggle = (type: string) => {
     setEditedPost(prev => ({
       ...prev,
-      postType: {
-        ...prev.postType,
-        [type]: !prev.postType[type]
-      }
+      postType: type
     }));
   };
 
-  // Handle hashtags input
   const handleHashtagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const hashtagsText = e.target.value;
-    const hashtagsList = hashtagsText.split(' ')
-      .map(tag => tag.startsWith('#') ? tag.substring(1) : tag)
-      .filter(tag => tag.length > 0);
     
     setEditedPost(prev => ({
       ...prev,
-      hashtags: hashtagsList
+      hashtag: hashtagsText
     }));
   };
 
-  // Handle media deletion
   const handleDeleteMedia = (index: number) => {
     setEditedPost(prev => ({
       ...prev,
-      mediaUrls: prev.mediaUrls.filter((_, i) => i !== index)
+      mediaUrl: prev.mediaUrl.filter((_, i) => i !== index)
     }));
   };
 
-  // Handle AI generation
   const handleGenerate = () => {
     if (onGenerate && generatePrompt.trim()) {
       onGenerate(generatePrompt);
@@ -192,153 +120,33 @@ const EditPost: React.FC<EditPostProps> = ({
       });
     }
   };
-
-  // Handle calendar date selection
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      const currentDate = new Date(editedPost.scheduledDate);
-      const hours = currentDate.getHours();
-      const minutes = currentDate.getMinutes();
-      
-      date.setHours(hours);
-      date.setMinutes(minutes);
-      
-      setEditedPost({
-        ...editedPost,
-        scheduledDate: date.toISOString()
-      });
-      setIsCalendarOpen(false);
-    }
-  };
   
-  // Handle time change
-  const handleTimeChange = (hours: number, minutes: number) => {
-    const timeZoneOffset = timeZoneLabel.replace('GMT', '');
-    const [offsetHours, offsetMinutes] = timeZoneOffset.split(':').map(Number);
-    const offsetInMinutes = (offsetHours * 60) + (offsetMinutes * (offsetHours < 0 ? -1 : 1));
-    
-    // Convert local time back to UTC
-    const localDate = new Date(date);
-    localDate.setHours(hours);
-    localDate.setMinutes(minutes);
-    const utcDate = new Date(localDate.getTime() - (offsetInMinutes * 60 * 1000));
-    
-    setEditedPost({
-      ...editedPost,
-      scheduledDate: utcDate.toISOString()
-    });
-  };
-  
-  // Handle date change functions
-  const handleDateChange = () => {
-    setIsCalendarOpen(!isCalendarOpen);
-  };
-  
-  const handleSelectDate = (selectedDate: Date | undefined) => {
-    if (!selectedDate) return;
-    
-    // Keep the time but update the date
-    const currentDate = new Date(editedPost.scheduledDate);
-    const newDate = new Date(selectedDate);
-    
-    // Extract hours and minutes based on the AM/PM format
-    let hours = parseInt(inputHour);
-    if (inputAmPm === 'PM' && hours < 12) hours += 12;
-    if (inputAmPm === 'AM' && hours === 12) hours = 0;
-    
-    newDate.setHours(hours);
-    newDate.setMinutes(parseInt(inputMinute));
-    
-    // Update both the internal calendar state and the post data
+  const handleDateChange = (newDate: Date) => {
     setDate(newDate);
-    setEditedPost(prev => ({
-      ...prev,
-      scheduledDate: newDate.toISOString()
-    }));
   };
   
-  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInputHour(e.target.value);
-    updateTimeInDate(e.target.value, inputMinute, inputAmPm);
-  };
-  
-  const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInputMinute(e.target.value);
-    updateTimeInDate(inputHour, e.target.value, inputAmPm);
-  };
-  
-  const handleAmPmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInputAmPm(e.target.value);
-    updateTimeInDate(inputHour, inputMinute, e.target.value);
-  };
-  
-  const updateTimeInDate = (hour: string, minute: string, ampm: string) => {
-    const currentDate = new Date(editedPost.scheduledDate);
-    
-    // Convert hour to 24-hour format if needed
-    let hours = parseInt(hour);
-    if (ampm === 'PM' && hours < 12) hours += 12;
-    if (ampm === 'AM' && hours === 12) hours = 0;
-    
-    currentDate.setHours(hours);
-    currentDate.setMinutes(parseInt(minute));
-    
-    setDate(currentDate);
-    setEditedPost(prev => ({
-      ...prev,
-      scheduledDate: currentDate.toISOString()
-    }));
-  };
-  
-  // Handle toggle between Schedule and Draft
-  const handleToggleDropdownOption = (option: 'schedule' | 'draft') => {
-    setSelectedButtonType(option);
-    setIsDropdownOpen(false);
-  };
-  
-  // Handle schedule button click
-  const handleSchedulePost = () => {
+  const handleSaveDraft = () => {
     if (!isEditing) return;
     
-    // Update post with current settings
-    onSave(editedPost);
+    const updatedPost = {
+      ...editedPost,
+      scheduleDate: date,
+      status: 'draft' as PostStatus
+    };
+    onSave(updatedPost);
     setIsEditing(false);
-    
-    const actionText = selectedButtonType === 'schedule' ? 'scheduled' : 'saved as draft';
-    toast({
-      title: selectedButtonType === 'schedule' ? "Post Scheduled" : "Draft Saved",
-      description: `Your post has been ${actionText}.`,
-    });
-    
-    // Notify calendar of the update if this is a calendar event
-    if (editedPost.postId) {
-      const event = new CustomEvent('calendarUpdated', { 
-        detail: { type: 'update', eventId: editedPost.postId }
-      });
-      document.dispatchEvent(event);
-    }
   };
-  
-  // Original save function - keeping for compatibility
-  const handleSave = handleSchedulePost;
 
-  // Handle delete
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete();
-      toast({
-        title: "Post Deleted",
-        description: "Your post has been deleted.",
-      });
-      
-      // Notify calendar of the deletion if this is a calendar event
-      if (editedPost.postId) {
-        const event = new CustomEvent('calendarUpdated', { 
-          detail: { type: 'delete', eventId: editedPost.postId }
-        });
-        document.dispatchEvent(event);
-      }
-    }
+  const handleSchedule = () => {
+    if (!isEditing) return;
+    
+    const updatedPost = {
+      ...editedPost,
+      scheduleDate: date,
+      status: 'schedule' as PostStatus
+    };
+    onSave(updatedPost);
+    setIsEditing(false);
   };
 
   const handleClose = () => {
@@ -346,7 +154,6 @@ const EditPost: React.FC<EditPostProps> = ({
     onClose();
   }
 
-  // If modal is not open, don't render anything
   if (!isOpen) return null;
 
   return (
@@ -364,18 +171,17 @@ const EditPost: React.FC<EditPostProps> = ({
 
           <div className="flex items-center">
             <h2 className="text-lg font-medium mr-2 text-gray-800 dark:text-gray-100">Post Details</h2>
-            {editedPost.status !== 'scheduled' && !isEditing && <button 
-              className={cn(
-                "text-gray-600 hover:text-gray-900 cursor-pointer flex items-center",
-                isEditing && "text-blue-500"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(!isEditing);
-              }}
-            >
-              <Edit className="w-5 h-5" />
-            </button>}
+            {false && (
+              <button 
+                className="text-gray-600 hover:text-gray-900 cursor-pointer flex items-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(!isEditing);
+                }}
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+            )}
           </div>
           
           <button 
@@ -394,16 +200,16 @@ const EditPost: React.FC<EditPostProps> = ({
           {/* Left side - Media preview (desktop) */}
           <div className="hidden md:flex w-1/2 border-r border-gray-200 p-4 flex-col">
             <div className="relative flex-grow">
-              {editedPost.mediaUrls.length > 0 ? (
+              {editedPost.mediaUrl.length > 0 ? (
                 <div className="relative mb-4 rounded-lg overflow-hidden h-64 md:h-72 lg:h-80">
                   <img 
-                    src={editedPost.mediaUrls[0]} 
+                    src={editedPost.mediaUrl[0]} 
                     alt="Post media" 
                     className="object-cover w-full h-full"
                   />
-                  {isEditing && (
+                  {editedPost.status === 'draft' && (
                     <button 
-                      className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white"
+                      className="absolute top-2 right-2 p-1 bg-gray-800/80 rounded-full hover:bg-gray-800 text-white"
                       onClick={() => handleDeleteMedia(0)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -429,7 +235,7 @@ const EditPost: React.FC<EditPostProps> = ({
                             const url = URL.createObjectURL(file);
                             setEditedPost(prev => ({
                               ...prev,
-                              mediaUrls: [...prev.mediaUrls, url]
+                              mediaUrl: [...prev.mediaUrl, url]
                             }));
                           }
                         }}
@@ -444,37 +250,23 @@ const EditPost: React.FC<EditPostProps> = ({
                 </div>
               )}
 
-              {/* Media navigation dots */}
-              {editedPost.mediaUrls.length > 0 && (
-                <div className="flex justify-center gap-1 my-2">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((_, index) => (
-                    <div 
-                      key={index} 
-                      className={cn(
-                        "h-2 w-2 rounded-full", 
-                        index === 0 ? "bg-blue-500" : "bg-gray-300"
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Post Type Selection - Moved from bottom to top */}
             <div className="mb-4">
               <h3 className="text-sm text-gray-700 font-medium mb-2">Post Type</h3>
               <div className="flex gap-2">
-                {Object.entries(editedPost.postType).map(([type, isSelected]) => (
+                {['post', 'story', 'reel'].map((type) => (
                   <button
                     key={type}
                     className={cn(
                       "px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1",
-                      isSelected 
+                      (editedPost.postType === type || (editedPost.postType === 'text' && type === 'post'))
                         ? "bg-blue-500 text-white" 
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
-                      !isEditing && "cursor-default"
+                        : "bg-gray-100 text-gray-600",
+                      !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
                     )}
-                    onClick={() => isEditing && handlePostTypeToggle(type as 'post' | 'story' | 'reel')}
+                    onClick={() => isEditing && handlePostTypeToggle(type)}
                     disabled={!isEditing}
                   >
                     {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -489,22 +281,22 @@ const EditPost: React.FC<EditPostProps> = ({
               
               {/* Platform toggles in a single grid */}
               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2 mb-4">
-                {Object.entries(editedPost.socialPlatforms).map(([platform, isSelected]) => (
+                {PLATFORM_VALUES.map((platform) => (
                   <button
                     key={platform}
                     className={cn(
                       "flex items-center justify-center px-1 py-1.5 rounded-md text-xs font-medium transition-colors",
-                      isSelected 
+                      editedPost.platform.includes(platform)
                         ? "bg-blue-500 text-white" 
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
-                      !isEditing && "cursor-default"
+                        : "bg-gray-100 text-gray-600",
+                      !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
                     )}
-                    onClick={() => isEditing && handlePlatformToggle(platform as keyof typeof editedPost.socialPlatforms)}
+                    onClick={() => isEditing && handlePlatformToggle(platform)}
                     disabled={!isEditing}
                   >
-                    {platform === 'X/Twitter' ? 'X' : 
-                     platform === 'Google Business' ? 'Google' :
-                     platform === 'Instagram' ? 'IG' : platform}
+                    {platform === 'twitter' ? 'X' : 
+                     platform === 'gmb' ? 'Google' :
+                     platform === 'instagram' ? 'IG' : platform}
                   </button>
                 ))}
               </div>
@@ -517,16 +309,16 @@ const EditPost: React.FC<EditPostProps> = ({
               <div className="flex-1" onClick={(e) => e.stopPropagation()}>
                 {/* Media preview for mobile */}
                 <div className="my-4 mx-4 relative">
-                  {editedPost.mediaUrls.length > 0 ? (
+                  {editedPost.mediaUrl.length > 0 ? (
                     <div className="relative rounded-lg overflow-hidden h-64">
                       <img 
-                        src={editedPost.mediaUrls[0]} 
+                        src={editedPost.mediaUrl[0]} 
                         alt="Post media" 
                         className="object-cover w-full h-full"
                       />
-                      {isEditing && (
+                      {editedPost.status === 'draft' && (
                         <button 
-                          className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white"
+                          className="absolute top-2 right-2 p-1 bg-gray-800/80 rounded-full hover:bg-gray-800 text-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteMedia(0);
@@ -560,7 +352,7 @@ const EditPost: React.FC<EditPostProps> = ({
                                   const url = URL.createObjectURL(file);
                                   setEditedPost(prev => ({
                                     ...prev,
-                                    mediaUrls: [...prev.mediaUrls, url]
+                                    mediaUrl: [...prev.mediaUrl, url]
                                   }));
                                 }
                               }}
@@ -655,7 +447,7 @@ const EditPost: React.FC<EditPostProps> = ({
                       "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-800",
                       !isEditing && "bg-gray-50 cursor-default"
                     )}
-                    value={editedPost.hashtags?.map(tag => `#${tag}`).join(' ') || ''}
+                    value={editedPost.hashtag}
                     onChange={handleHashtagsChange}
                     placeholder="#hashtag1 #hashtag2 #hashtag3"
                     readOnly={!isEditing}
@@ -663,7 +455,7 @@ const EditPost: React.FC<EditPostProps> = ({
                 </div>
                 
                 {/* AI Generation Button (Mobile) */}
-                {onGenerate && (
+                {onGenerate && ENABLE_AI_GENERATE && (
                   <div className={cn(
                     "mb-4 px-4",
                     !isEditing && "opacity-50"
@@ -696,22 +488,22 @@ const EditPost: React.FC<EditPostProps> = ({
                 )}>
                   <h3 className="text-sm text-gray-700 font-medium mb-2">Platforms</h3>
                   <div className="grid grid-cols-3 gap-2 mb-4">
-                    {Object.entries(editedPost.socialPlatforms).map(([platform, isSelected]) => (
+                    {PLATFORM_VALUES.map((platform) => (
                       <button
                         key={platform}
                         className={cn(
                           "flex items-center justify-center px-2 py-1.5 rounded-md text-xs font-medium transition-colors",
-                          isSelected 
+                          editedPost.platform.includes(platform)
                             ? "bg-blue-500 text-white" 
                             : "bg-gray-100 text-gray-600",
-                          !isEditing && "cursor-default"
+                          !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
                         )}
-                        onClick={() => isEditing && handlePlatformToggle(platform as keyof typeof editedPost.socialPlatforms)}
+                        onClick={() => isEditing && handlePlatformToggle(platform)}
                         disabled={!isEditing}
                       >
-                        {platform === 'X/Twitter' ? 'X' : 
-                         platform === 'Google Business' ? 'Google' :
-                         platform === 'Instagram' ? 'IG' : platform}
+                        {platform === 'twitter' ? 'X' : 
+                         platform === 'gmb' ? 'Google' :
+                         platform === 'instagram' ? 'IG' : platform}
                       </button>
                     ))}
                   </div>
@@ -719,17 +511,17 @@ const EditPost: React.FC<EditPostProps> = ({
                   {/* Post Type Selection for mobile */}
                   <h3 className="text-sm text-gray-700 font-medium mb-2">Post Type</h3>
                   <div className="flex gap-2 mb-4">
-                    {Object.entries(editedPost.postType).map(([type, isSelected]) => (
+                    {['post', 'story', 'reel'].map((type) => (
                       <button
                         key={type}
                         className={cn(
                           "px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1",
-                          isSelected 
+                          (editedPost.postType === type || (editedPost.postType === 'text' && type === 'post'))
                             ? "bg-blue-500 text-white" 
                             : "bg-gray-100 text-gray-600",
-                          !isEditing && "cursor-default"
+                          !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
                         )}
-                        onClick={() => isEditing && handlePostTypeToggle(type as 'post' | 'story' | 'reel')}
+                        onClick={() => isEditing && handlePostTypeToggle(type)}
                         disabled={!isEditing}
                       >
                         {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -746,52 +538,38 @@ const EditPost: React.FC<EditPostProps> = ({
                 {timeZoneLabel}
               </div>  
               <div className="flex flex-col space-y-2">
-                {/* Calendar Date Picker */}
-                <div 
-                  className={cn(
-                    "flex items-center bg-gray-200 rounded-md px-3 py-2 space-x-2 w-full",
-                    isEditing ? "cursor-pointer hover:bg-gray-300" : "opacity-75 bg-gray-100"
-                  )}
-                  onClick={() => isEditing && handleDateChange()}
-                >
-                  <span className="text-sm text-gray-700 font-medium">
-                    {format(date, 'MMM d, yyyy')} • {inputHour}:{inputMinute} {inputAmPm}
-                  </span>
-                  <CalendarIcon className="text-gray-700 h-4 w-4 flex-shrink-0 ml-auto" />
-                </div>
+                <label className="text-sm font-medium text-gray-700">Schedule Date</label>
+                <DatePickerWithButton
+                  date={date}
+                  onDateChange={handleDateChange}
+                  disabled={!isEditing}
+                  className={cn("w-full", !isEditing && "opacity-75")}
+                />
                 
-                {/* Schedule Button with Dropdown */}
-                {editedPost.status === 'scheduled' ? (
-                  <div className="flex justify-center">
+                {/* Schedule Button with Dropdown - Mobile */}
+                {editedPost.status === 'schedule' ? (
+                  <div className="flex justify-center w-full">
                     <button
-                      className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                      onClick={handleDelete}
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors inline-flex items-center justify-center gap-2"
+                      onClick={onDelete}
                     >
+                      <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
                   </div>
-                  ) : (
-                  <div className={cn("flex rounded-lg shadow-sm relative", !isEditing && "opacity-70")}>
-                    <button 
-                      className={cn(
-                        "px-6 py-2 text-sm font-medium bg-cyan-500 text-white whitespace-nowrap rounded-l-lg focus:outline-none flex-1",
-                        isEditing ? "hover:bg-cyan-600" : "bg-cyan-400 cursor-not-allowed"
-                      )}
-                      onClick={() => isEditing && handleSchedulePost()}
+                ) : editedPost.status === 'published' ? (
+                  <div className="flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-md">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Post Published</span>
+                  </div>
+                ) : (
+                  <div className={cn("flex rounded-lg shadow-sm relative w-full")}>
+                    <ScheduleActionButton
+                      onSchedule={() => isEditing && handleSchedule()}
+                      onDraft={() => isEditing && handleSaveDraft()}
+                      className={!isEditing ? "opacity-70" : ""}
                       disabled={!isEditing}
-                    >
-                      {selectedButtonType === 'schedule' ? 'Schedule Post' : 'Save Draft'}
-                    </button>
-                    <button 
-                      className={cn(
-                        "px-2 py-2 bg-cyan-500 text-white rounded-r-lg focus:outline-none",
-                        isEditing ? "hover:bg-cyan-700" : "bg-cyan-400 cursor-not-allowed"
-                      )}
-                      onClick={() => isEditing && setIsDropdownOpen(!isDropdownOpen)}
-                      disabled={!isEditing}
-                    >
-                      <ChevronDown className={`h-5 w-5 transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                    />
                   </div>
                 )}
               </div>
@@ -872,7 +650,7 @@ const EditPost: React.FC<EditPostProps> = ({
                   "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-800",
                   !isEditing && "opacity-75 bg-gray-50 cursor-default"
                 )}
-                value={editedPost.hashtags?.map(tag => `#${tag}`).join(' ') || ''}
+                value={editedPost.hashtag}
                 onChange={handleHashtagsChange}
                 placeholder="#hashtag1 #hashtag2 #hashtag3"
                 readOnly={!isEditing}
@@ -880,7 +658,7 @@ const EditPost: React.FC<EditPostProps> = ({
             </div>
 
             {/* AI Generation Button */}
-            {onGenerate && (
+            {onGenerate && ENABLE_AI_GENERATE && (
               <div className="mb-6">
                 <button
                   className={cn(
@@ -912,52 +690,41 @@ const EditPost: React.FC<EditPostProps> = ({
               <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center space-y-2 lg:space-y-0 lg:space-x-2">
                 
                 {/* Calendar Date Picker */}
-                <div 
-                  className={cn(
-                    "flex items-center bg-gray-200 rounded-md px-3 py-2 space-x-2 w-full lg:w-auto",
-                    isEditing ? "cursor-pointer hover:bg-gray-300" : "opacity-75 bg-gray-100"
-                  )}
-                  onClick={() => isEditing && handleDateChange()}
-                >
-                  <span className="text-sm text-gray-700 font-medium whitespace-nowrap">
-                    {format(date, 'MMM d, yyyy')} • {inputHour}:{inputMinute} {inputAmPm}
-                  </span>
-                  <CalendarIcon className="text-gray-700 h-4 w-4 flex-shrink-0" />
+                <div className="w-full lg:w-auto">
+                  <DatePickerWithButton
+                    date={date}
+                    onDateChange={handleDateChange}
+                    disabled={!isEditing}
+                    className={cn("w-full", !isEditing && "opacity-75")}
+                  />
                 </div>
                 
-                {/* Schedule Button with Dropdown */}
-                {editedPost.status === 'scheduled' ? (
+                {/* Schedule Button with Dropdown - Desktop */}
+                {editedPost.status === 'schedule' ? (
                   <div className="flex justify-center">
                     <button
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                      onClick={handleDelete}
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors inline-flex items-center justify-center gap-2"
+                      onClick={onDelete}
                     >
+                      <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
                   </div>
-                  ) : (
-                <div className={cn("flex rounded-lg shadow-sm relative flex-1 lg:flex-initial", !isEditing && "opacity-70")}>
-                  <button 
-                    className={cn(
-                      "px-6 py-2 text-sm font-medium bg-cyan-500 text-white whitespace-nowrap rounded-l-lg focus:outline-none flex-1 lg:flex-initial",
-                      isEditing ? "hover:bg-cyan-600" : "bg-cyan-400 cursor-not-allowed"
-                    )}
-                    onClick={() => isEditing && handleSchedulePost()}
-                    disabled={!isEditing}
-                  >
-                    {selectedButtonType === 'schedule' ? 'Schedule Post' : 'Save Draft'}
-                  </button>
-                  <button 
-                    className={cn(
-                      "px-2 py-2 bg-cyan-500 text-white rounded-r-lg focus:outline-none",
-                      isEditing ? "hover:bg-cyan-700" : "bg-cyan-400 cursor-not-allowed"
-                    )}
-                    onClick={() => isEditing && setIsDropdownOpen(!isDropdownOpen)}
-                    disabled={!isEditing}
-                  >
-                    <ChevronDown className={`h-5 w-5 transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>)}
+                ) : editedPost.status === 'published' ? (
+                  <div className="flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-md">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Post Published</span>
+                  </div>
+                ) : (
+                  <div className={cn("flex rounded-lg shadow-sm relative w-full lg:w-auto")}>
+                    <ScheduleActionButton
+                      onSchedule={() => isEditing && handleSchedule()}
+                      onDraft={() => isEditing && handleSaveDraft()}
+                      className={!isEditing ? "opacity-70" : ""}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

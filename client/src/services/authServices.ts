@@ -11,10 +11,10 @@ interface AuthResponse {
   };
 }
 
-export const verifyToken = async () => {
+export const verifyToken = async () : Promise<User>=> {
   try {
     const response = await doGET(`${BASE_URL}/auth/me`);
-    return response.data;
+    return response.data.data.user;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.message || "Signup failed");

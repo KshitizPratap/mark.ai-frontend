@@ -57,7 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen bg-black text-white overflow-hidden">
+    <div className="flex h-screen text-white overflow-hidden">
       <Sidebar currentRoute={currentRoute} />
 
       <div className="flex-1 flex flex-col ml-[80px] h-screen">

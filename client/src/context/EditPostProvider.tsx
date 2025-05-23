@@ -5,15 +5,15 @@ import { verifyToken } from '@/services/authServices';
 import { getValue, STORAGE_KEYS } from '@/commons/storage';
 import { useLocation } from 'wouter';
 import { useAuthStore } from '@/store/useAuthStore';
-import { PostData } from '@/components/EditPost';
+import { Post } from '@/types/post';
 
 interface EditPostContextType {
   isOpen: boolean;
-  post: PostData;
+  post: Post;
   isLoading: boolean;
-  onOpen: (postId?: number | string, postData?: PostData, timeZoneLabel?: string) => void;
+  onOpen: (postId?: string, postData?: Post, timeZoneLabel?: string) => void;
   onClose: () => void;
-  onSave: (post: PostData) => Promise<void>;
+  onSave: (post: Post) => Promise<void>;
   onDelete: () => Promise<void>;
   onGenerate: (prompt: string) => Promise<void>;
   timeZoneLabel?: string;
@@ -29,7 +29,7 @@ export const EditPostProvider: React.FC<{ children: React.ReactNode }> = ({
   const editPost = useEditPost();
   const token = getValue(STORAGE_KEYS.TOKEN) || "";
   const [, navigate] = useLocation();
-  const { setIsAuth, setUserDetails } = useAuthStore()
+  const { setIsAuth, setUserDetails, setIsVerifying } = useAuthStore()
   const [timeZoneLabel, setTimeZoneLabel] = React.useState<string>('GMT+00:00');
 
   useEffect(() => {
@@ -39,18 +39,21 @@ export const EditPostProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const checkUserAuthentication = async () => {
+    setIsVerifying(true);
     try{
       const response = await verifyToken();
-      setUserDetails(response.data);
+      setUserDetails(response);
       setIsAuth(true);
       navigate("/dashboard");
     } catch (error){
       setIsAuth(false);
       navigate("/");
+    } finally{
+      setIsVerifying(false);
     }
   }
 
-  const onOpen = (postId?: number | string, postData?: PostData, timeZone?: string) => {
+  const onOpen = (postId?: string, postData?: Post, timeZone?: string) => {
     if (timeZone) {
       setTimeZoneLabel(timeZone);
     }

@@ -1,5 +1,5 @@
 import { format, parseISO, startOfDay, addHours, isSameDay, isSameHour } from 'date-fns';
-import { Post } from '@/types/calendar';
+import { Post } from '@/types/post';
 
 // Type for the preprocessed posts map
 export type PostsByDateTime = Map<string, Post[]>;
@@ -21,9 +21,9 @@ export const preprocessPosts = (posts: Post[]): PostsByDateTime => {
 
   posts.forEach(post => {
     // Ensure we're working with a proper Date object
-    const postDate = post.scheduledDate instanceof Date 
-      ? post.scheduledDate 
-      : parseISO(post.scheduledDate as string);
+    const postDate = post.scheduleDate instanceof Date 
+      ? post.scheduleDate 
+      : parseISO(post.scheduleDate as unknown as string);
 
     // Generate the key for this post's date and hour
     const key = generateDateTimeKey(postDate);
@@ -75,8 +75,8 @@ export const getPostsForDay = (
  * Used for positioning posts in the week view
  */
 export const doPostsOverlap = (post1: Post, post2: Post): boolean => {
-  const date1 = post1.scheduledDate;
-  const date2 = post2.scheduledDate;
+  const date1 = post1.scheduleDate;
+  const date2 = post2.scheduleDate;
   
   return isSameDay(date1, date2) && isSameHour(date1, date2);
 }; 

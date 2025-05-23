@@ -49,7 +49,7 @@ const apiHandler = async (endPoint: any, method: string, data = null) => {
         //     errorMessage = 'Session expired. Please login again.';
         // }
 
-        return { error: true, message: errorMessage, status: statusCode, data: null };
+        throw new Error(error.response?.data?.message || 'Facing some technical issue, please try after some time');
     }
 };
 

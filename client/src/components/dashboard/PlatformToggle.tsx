@@ -5,10 +5,15 @@ import {
     // Import other specific platform icons here if you have them
 } from './IconComponents';
 
+/**
+ * PlatformToggle is a stateless toggle button for a social platform.
+ * The parent component should determine 'active' by checking if the platform is in the array.
+ * Example: active={platformArray.includes(label)}
+ */
 interface PlatformToggleProps {
     label: string;
     icon: string; // Could be actual icon component later, or simple text/emoji
-    active: boolean;
+    active: boolean; // true if platform is in the array, false otherwise
     onToggle: () => void; // Function to handle toggle state change
 }
 
@@ -50,7 +55,7 @@ const PlatformToggle: React.FC<PlatformToggleProps> = ({ label, icon, active, on
             <button
                 type="button"
                 className={`${active ? platformActiveIconBg : platformIconBg
-                    } relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0`}
+                    } relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0}`}
                 aria-pressed={active}
             >
                 <span className="sr-only">Enable {label}</span>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +22,7 @@ const DayHeaderCellWeek: React.FC<DayHeaderCellWeekProps> = ({
           {day}
         </span>
         <div className={cn(
-          "w-7 h-7 flex items-center justify-center mt-1 font-poppins font-medium",
+          "w-7 h-7 flex items-center justify-center mt-1 font-poppins font-medium text-xs",
           isToday ? "bg-today-bg text-today-text rounded-full" : "text-day-text"
         )}>
           {date}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Post } from '@/types/calendar';
 import CurrentTimeIndicator from './CurrentTimeIndicator';
 import { getHoursArray } from '@/utils/dateUtils';
 import { PostsByDateTime, getPostsForDateTime } from '@/utils/postUtils';
@@ -34,15 +33,17 @@ const DayColumnWeek: React.FC<DayColumnWeekProps> = ({
               className="h-[60px] border-b border-slate-200 relative cursor-pointer hover:bg-gray-50"
               data-hour={hour}
             >
-              {/* Render posts for this hour */}
-              <div className="space-y-1 p-1">
-                {postsForHour.map((post) => (
-                  <PostIndicator
-                    key={post.postId}
-                    post={post}
-                    onClick={onPostClick}
-                  />
-                ))}
+              {/* Render posts for this hour with scrolling */}
+              <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <div className="space-y-1 p-1">
+                  {postsForHour.map((post) => (
+                    <PostIndicator
+                      key={post._id}
+                      post={post}
+                      onClick={onPostClick}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           );

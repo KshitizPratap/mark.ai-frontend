@@ -1,15 +1,17 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarView } from '@/types/post';
 
 interface ActionScreenHeaderProps {
-  timeframe: string;
-  setTimeframe: (timeframe: string) => void;
+  title: string;
+  timeframe: CalendarView;
+  setTimeframe: (timeframe: CalendarView) => void;
   selectedMonth: number;
   selectedYear: number;
   weekStart: Date;
   weekEnd: Date;
-  handlePrevMonth: () => void;
-  handleNextMonth: () => void;
+  handlePrevPeriod: () => void;
+  handleNextPeriod: () => void;
 }
 
 const months = [
@@ -39,27 +41,28 @@ const getWeekRange = (weekStart: Date, weekEnd: Date) => {
 };
 
 const ActionScreenHeader: React.FC<ActionScreenHeaderProps> = ({
+  title,
   timeframe,
   setTimeframe,
   selectedMonth,
   selectedYear,
   weekStart,
   weekEnd,
-  handlePrevMonth,
-  handleNextMonth,
+  handlePrevPeriod,
+  handleNextPeriod,
 }) => {
   return (
-    <div className="relative p-5 bg-white rounded-lg mb-5">
-      <h2 className="text-2xl font-semibold text-gray-800 m-0 pl-5">Dashboard</h2>
-      <div className="flex justify-between items-center mt-5 mb-5">
+    <div className="relative px-5 pt-2 bg-white mb-5">
+      <h2 className="text-2xl font-semibold text-gray-800 m-0 pl-5">{title}</h2>
+      <div className="flex justify-between items-center mt-4">
         <div className="flex items-center gap-0">
           <ChevronLeft
             className="text-lg text-black cursor-pointer transition-transform duration-200 hover:scale-110 ml-[10px]"
-            onClick={handlePrevMonth}
+            onClick={handlePrevPeriod}
           />
           <ChevronRight
             className="text-lg text-black cursor-pointer transition-transform duration-200 hover:scale-110 ml-[10px]"
-            onClick={handleNextMonth}
+            onClick={handleNextPeriod}
           />
           <span className="text-base text-gray-800">
             {timeframe === 'month' ? `${months[selectedMonth]} ${selectedYear}` : getWeekRange(weekStart, weekEnd)}
@@ -69,7 +72,7 @@ const ActionScreenHeader: React.FC<ActionScreenHeaderProps> = ({
           <button
             className={`px-5 py-[5px] text-sm cursor-pointer transition-colors duration-200 rounded ${
               timeframe === 'month' ? 'bg-cyan-600 text-white' : 'bg-gray-100 text-gray-800'
-            } hover:bg-cyan-600 border-none`}
+            } border-none`}
             onClick={() => setTimeframe('month')}
           >
             Month
@@ -77,7 +80,7 @@ const ActionScreenHeader: React.FC<ActionScreenHeaderProps> = ({
           <button
             className={`px-5 py-[5px] text-sm cursor-pointer transition-colors duration-200 rounded ${
               timeframe === 'week' ? 'bg-cyan-600 text-white' : 'bg-gray-100 text-gray-800'
-            } hover:bg-cyan-600 border-none`}
+            } border-none`}
             onClick={() => setTimeframe('week')}
           >
             Week
