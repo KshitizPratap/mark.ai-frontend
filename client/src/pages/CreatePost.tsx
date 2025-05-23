@@ -112,7 +112,7 @@ const CreatePost = () => {
   const handleImageDelete = () => {
     setUploadedImageFile(null);
     setLocalImageUrl(null);
-    setMediaUrl([]);
+    setCreatePost({ mediaUrl: [] });
   };
   
   // Modified handler to handle scheduling
