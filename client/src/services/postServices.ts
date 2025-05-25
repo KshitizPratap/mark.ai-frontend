@@ -1,37 +1,7 @@
 import { BASE_URL } from '@/commons/constant';
 import { doGET, doPOST, doPUT, doDELETE } from '@/commons/serviceUtils';
 import axios from 'axios';
-import { PlatformType, PostStatus } from '@/types/post';
-
-// Interface for create post request
-interface CreatePostRequest {
-  title: string;
-  content: string;
-  platform: PlatformType[];
-  status: PostStatus;
-  hashtag: string;
-  mediaUrl: string[];
-  postType: string;
-  scheduleDate: string; // ISO string
-  publish?: string;
-  ayrshareId?: string;
-  platformId?: string;
-}
-
-// Interface for update post request
-interface UpdatePostRequest {
-  title?: string;
-  content?: string;
-  platform?: PlatformType[];
-  status?: PostStatus;
-  hashtag?: string;
-  mediaUrl?: string[];
-  postType?: string;
-  scheduleDate?: string;
-  publish?: string;
-  ayrshareId?: string;
-  platformId?: string;
-}
+import { PlatformType, PostStatus, PostApiDetails } from '@/types/post';
 
 // Interface for get posts filters
 interface GetPostsFilters {
@@ -68,7 +38,7 @@ export const getPosts = async (filters: GetPostsFilters) => {
   }
 };
 
-export const createPost = async (postData: CreatePostRequest) => {
+export const createPost = async (postData: PostApiDetails) => {
   try {
     const response = await doPOST(
       `${BASE_URL}/post/add`,
@@ -83,7 +53,7 @@ export const createPost = async (postData: CreatePostRequest) => {
   }
 };
 
-export const updatePost = async (postData: UpdatePostRequest, postId: string) => {
+export const updatePost = async (postData: PostApiDetails, postId: string) => {
   try {
     const response = await doPUT(
       `${BASE_URL}/post/update/${postId}`,

@@ -17,7 +17,6 @@ const PLATFORM_VALUES: PlatformType[] = [
   'youtube',
 ];
 
-// Define component props
 interface EditPostProps {
   isOpen: boolean;
   onClose: () => void;

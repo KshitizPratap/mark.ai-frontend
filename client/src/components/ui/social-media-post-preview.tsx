@@ -66,8 +66,8 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   uploadedImageFile,
   onImageDelete
 }) => {
-  const {createPost} = usePostStore();
-  const {content: postContent, hashtag, title: postTitle} = createPost;
+  const {livePost} = usePostStore();
+  const {content: postContent, hashtag, title: postTitle} = livePost;
   const { userDetails= {} } = useAuthStore();
   const { name: userName = "" } = userDetails as User;
   const userInitials = userName.split(" ")[0][0] + userName.split(" ")?.pop()?.[0];
@@ -228,7 +228,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
             {hashtags && hashtags.length > 0 && (
               <div className="text-blue-500 text-sm space-x-1 flex flex-wrap">
                 {hashtags.map((tag, index) => (
-                  <span key={index}>#{tag}</span>
+                  <span key={index}>{tag}</span>
                 ))}
               </div>
             )}

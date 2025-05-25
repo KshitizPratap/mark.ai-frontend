@@ -82,7 +82,7 @@ export default function CalendarRoute() {
       />
       <div className="overflow-auto">
         <SocialCalendar
-          posts={posts.filter(post => post.status !== 'deleted')}
+          posts={posts.filter(post => post.status !== 'deleted' && post.status !== 'live')}
           timeZoneLabel="GMT+05:30"
           currentView={timeframe}
           displayDate={getDisplayDate()}

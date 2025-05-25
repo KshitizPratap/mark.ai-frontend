@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/useAuthStore";
-import { FormEvent, useState, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import { useToast } from "./use-toast";
 import {
   handleSignUp,
@@ -8,7 +8,6 @@ import {
 import { useLocation } from "wouter";
 import { UserCredential } from "@/types";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { setValue, STORAGE_KEYS } from "@/commons/storage";
 
 export const useAuth = () => {
   const { toast } = useToast();
@@ -38,7 +37,6 @@ export const useAuth = () => {
       const {data: response} = await loginUser({ email, password });
       setUserDetails(response.user);
       setIsAuth(true);
-      setValue(STORAGE_KEYS.TOKEN, response.token);
 
       toast({
         title: "Success",
@@ -75,7 +73,6 @@ export const useAuth = () => {
 
       const {data: response} = await handleSignUp(userData);
       setUserDetails(response.user);
-      setValue(STORAGE_KEYS.TOKEN, response.token)
       setIsAuth(true);
 
       toast({

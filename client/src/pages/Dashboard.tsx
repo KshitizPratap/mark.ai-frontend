@@ -114,7 +114,7 @@ const Dashboard = () => {
 
   // Filter posts by timeframe (month/week)
   const timeframeFilteredPosts = posts.filter(post => {
-    const postDate = new Date(post.scheduleDate || post.createdAt);
+    const postDate = new Date(post.scheduleDate);
     if (timeframe === 'month') {
       return postDate.getMonth() === selectedMonth && postDate.getFullYear() === selectedYear;
     } else {
@@ -300,7 +300,7 @@ const Dashboard = () => {
                     {post.title} : {post.status}
                   </h4>
                   <p id="post-date" className="m-0 text-[13px] text-black font-normal">
-                    {formatDate(post.scheduleDate || post.createdAt)}
+                    {formatDate(post.scheduleDate)}
                   </p>
                 </div>
 

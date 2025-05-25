@@ -25,8 +25,7 @@ export const syncPostsByDateRange = async (startDate: string, endDate: string): 
     if (response?.success && response?.data?.data?.length > 0) {
       const parsedPosts = response.data.data.map((post: any) => ({
         ...post,
-        scheduleDate: post.scheduleDate ? new Date(post.scheduleDate) : undefined,
-        createdAt: post.createdAt ? new Date(post.createdAt) : undefined,
+        scheduleDate: post.scheduleDate ? new Date(post.scheduleDate) : undefined
       }));
       return parsedPosts;
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { usePostStore } from "@/store/usePostStore";
+import { resetLivePost, usePostStore } from "@/store/usePostStore";
 import { PlatformType, PostStatus } from "@/types/post";
 import PlatformToggle from "@/components/dashboard/PlatformToggle";
 import SocialMediaPostPreview from "@/components/ui/social-media-post-preview";
@@ -7,44 +7,37 @@ import { platformsRow1, postTypes } from "@/commons/constant";
 import { useToast } from "@/hooks/use-toast";
 import { updatePost } from "@/services/postServices";
 import useEditPost from "@/hooks/use-edit-post";
+import { createDummyLivePost } from "@/services/authServices";
 
 const CreatePost = () => {
   const {
-    createPost,
-    setCreatePost,
+    livePost,
+    setLivePost,
   } = usePostStore();
-  const {content, hashtag, mediaUrl, platform, postType, scheduleDate, title} = createPost;
+  const { platform, postType, scheduleDate } = livePost;
 
   const { toast } = useToast();
-  const { isLoading, onSave } = useEditPost();
+  const { onSave } = useEditPost();
   const [isUpdating, setIsUpdating] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
-  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
-
-  const imageUrl =
-    localImageUrl ||
-    (createPost.mediaUrl && createPost.mediaUrl.length > 0 ? createPost.mediaUrl[0] : undefined);
 
   useEffect(() => {
     try {
-      if (createPost.scheduleDate) {
-        setDate(createPost.scheduleDate); // Set the main date object
+      if (livePost.scheduleDate) {
+        setDate(livePost.scheduleDate); // Set the main date object
       }
     } catch (error) {
       console.error("Error parsing scheduleDate prop:", error);
       const now = new Date();
       setDate(now);
     }
-  }, [createPost.scheduleDate]);
+  }, [livePost.scheduleDate]);
 
   useEffect(() => {
     if (uploadedImageFile) {
       const url = URL.createObjectURL(uploadedImageFile);
-      setLocalImageUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else {
-      setLocalImageUrl(null);
     }
   }, [uploadedImageFile]);
 
@@ -58,11 +51,11 @@ const CreatePost = () => {
         {
           [key]: value,
         },
-        createPost._id || ""
+        livePost._id || ""
       );
 
       if(response){
-        setCreatePost({
+        setLivePost({
           [key]: value,
         });
       }
@@ -79,9 +72,11 @@ const CreatePost = () => {
   };
 
   const handlePlatformToggle = async (platformName: PlatformType) => {
-    const newPlatforms = platform.includes(platformName)
-      ? platform.filter((p) => p !== platformName)
-      : [...platform, platformName];
+    const currentPlatforms = Array.isArray(platform) ? platform : [];
+
+    const newPlatforms = currentPlatforms.includes(platformName)
+      ? currentPlatforms.filter((p) => p !== platformName)
+      : [...currentPlatforms, platformName];
     
     updatePostHandler("platforms", newPlatforms);
   };
@@ -92,7 +87,7 @@ const CreatePost = () => {
 
   const handleDateChange = (newDate: Date) => {
     setDate(newDate);
-    setCreatePost({ scheduleDate: newDate });
+    setLivePost({ scheduleDate: newDate });
   };
   
   // Image upload handler
@@ -105,36 +100,22 @@ const CreatePost = () => {
 
   const handleImageDelete = () => {
     setUploadedImageFile(null);
-    setLocalImageUrl(null);
-    setCreatePost({ mediaUrl: [] });
+    setLivePost({ mediaUrl: [] });
   };
 
-  const handleSaveDraft = () => {
+  const handleSave = (status: PostStatus) => {
     const updatedPost = {
-      ...createPost,
+      ...livePost,
       scheduleDate: date || new Date(),
-      status: 'draft' as PostStatus,
-      userId: '',
-      publish: '',
-      createdAt: new Date(),
-      ayrshareId: ''
+      status,
     };
+    resetLivePost();
     onSave(updatedPost);
+    setTimeout(() => {
+      createDummyLivePost();
+    }, 500);
   };
 
-  const handleSchedule = () => {
-    const updatedPost = {
-      ...createPost,
-      scheduleDate: date || new Date(),
-      status: 'schedule' as PostStatus,
-      userId: '',
-      publish: '',
-      createdAt: new Date(),
-      ayrshareId: ''
-    };
-    onSave(updatedPost);
-  };
-  
   const previewPanelBg = "bg-gray-100";
   
   return (
@@ -153,7 +134,7 @@ const CreatePost = () => {
                 key={platformObj.name}
                 label={platformObj.name.charAt(0).toUpperCase() + platformObj.name.slice(1)}
                 icon={platformObj.icon}
-                active={platform.includes(platformObj.name)}
+                active={!!platform?.includes(platformObj.name)}
                 onToggle={() => handlePlatformToggle(platformObj.name)}
               />
             ))}
@@ -186,8 +167,8 @@ const CreatePost = () => {
               userHandle="@steveconley"
               userTitle="Product Designer"
               scheduledDate={scheduleDate}
-              onSchedule={handleSchedule}
-              onDraft={handleSaveDraft}
+              onSchedule={() => handleSave('schedule')}
+              onDraft={() => handleSave('draft')}
               onDateChange={handleDateChange}
               hideFooter={false}
               onImageUpload={handleImageUpload}

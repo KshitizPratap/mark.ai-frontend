@@ -18,11 +18,11 @@ export type PlatformType =
   | "twitter"
   | "youtube";
 
-export type PostStatus = 'draft' | 'schedule' | 'public' | 'published' | 'deleted';
+export type PostStatus = 'draft' | 'schedule' | 'live' | 'published' | 'deleted';
 
 export interface Post {
   _id?: string;
-  userId: string | Record<string, any>;
+  userId?: string | Record<string, any>;
   title: string;
   content: string;
   hashtag: string;
@@ -31,10 +31,19 @@ export interface Post {
   postType: string;
   status: PostStatus;
   scheduleDate: Date;
-  publish: string;
-  platformId?: string;
-  createdAt: Date;
-  ayrshareId: string;
+  publish?: string;
+  createdAt?: string;
+}
+
+export interface PostApiDetails {
+  title?: string;
+  content?: string;
+  hashtag?: string;
+  mediaUrl?: string[];
+  platform?: PlatformType[];
+  postType?: string;
+  status?: PostStatus;
+  scheduleDate?: string;
 }
 
 export type CalendarView = 'month' | 'week';

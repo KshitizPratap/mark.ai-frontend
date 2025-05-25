@@ -10,7 +10,7 @@ interface PostIndicatorProps {
 
 const PostIndicator: React.FC<PostIndicatorProps> = ({ post, onClick }) => {
 
-  if (post.status === 'deleted') return null;
+  if (post.status === 'deleted' || post.status === 'live') return null;
 
   const handleClick = () => {
     onClick(post._id || '');

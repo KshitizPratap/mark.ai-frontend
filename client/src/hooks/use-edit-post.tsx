@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Post } from '@/types/post';
 import { useToast } from '@/hooks/use-toast';
-import { deletePost, updatePost, createPost } from '@/services/postServices';
+import { deletePost, updatePost } from '@/services/postServices';
 import { syncPostsFromDB } from '@/utils/postSync';
 import { usePostStore } from '@/store/usePostStore';
 
@@ -16,11 +16,7 @@ const DEFAULT_POST: Post = {
   platform: [],
   postType: 'post',
   status: 'draft',
-  scheduleDate: new Date(),
-  publish: '',
-  platformId: undefined,
-  createdAt: new Date(),
-  ayrshareId: '',
+  scheduleDate: new Date()
 };
 
 export interface EditPostStore {
@@ -69,15 +65,12 @@ export const useEditPost = () => {
       const response = await updatePost({
         title: updatedPost.title,
         content: updatedPost.content,
-        platform: updatedPost.platform,
-        status: updatedPost.status,
         hashtag: updatedPost.hashtag,
         mediaUrl: updatedPost.mediaUrl,
+        platform: updatedPost.platform,
         postType: updatedPost.postType,
+        status: updatedPost.status,
         scheduleDate: updatedPost.scheduleDate.toISOString(),
-        publish: 'true',
-        ayrshareId: updatedPost.ayrshareId || '',
-        platformId: updatedPost.platformId
       }, updatedPost._id || '');
 
       if (!response?.success) {

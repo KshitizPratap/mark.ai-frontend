@@ -11,6 +11,7 @@ export interface LoginRequest {
 
 export interface ChatRequest {
   message: string;
+  post: any;
 }
 
 export interface ChatResponse {

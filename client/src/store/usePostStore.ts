@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Message } from '@/types';
-import { Post, PlatformType } from '@/types/post';
+import { Post, PlatformType, PostStatus } from '@/types/post';
 
 interface PostState {
   messages: Message[];
@@ -8,17 +8,9 @@ interface PostState {
   isThinking: boolean;
   setIsThinking: (isThinking: boolean) => void;
 
-  createPost: {
-    _id?: string;
-    title: string;
-    content: string;
-    hashtag: string;
-    mediaUrl: string[];
-    platform: PlatformType[];
-    postType: string;
-    scheduleDate: Date;
-  };
-  setCreatePost: (postState: Partial<PostState['createPost']>) => void;
+  livePost:Post;
+  setLivePost: (postState: Partial<PostState['livePost']>) => void;
+  resetLivePost: () => void;
 
   posts: Post[];
   setPosts: (posts: Post[]) => void;
@@ -30,18 +22,17 @@ interface PostState {
 }
 
 const initialState = {
-  showSignUpPrompt: false,
-  messageCount: 0,
   messages: [],
   isThinking: false,
-  createPost: {
-    title: "",
-    content: "",
-    hashtag: "",
+  livePost: {
+    title: "Welcome to Mark.ai",
+    content: "This is your social media post. Edit it to get started!",
+    hashtag: "#welcome",
     mediaUrl: [],
     platform: [],
-    postType: 'post',
+    postType: "",
     scheduleDate: new Date(),
+    status: "live" as PostStatus,
   },
   posts: [],
   displayDate: new Date(),
@@ -55,8 +46,8 @@ export const usePostStore = create<PostState>((set) => ({
   setIsThinking: (isThinking) => set({ isThinking }),
 
   // Post state actions
-  setCreatePost: (newPostState) => set((state) => ({
-    createPost: { ...state.createPost, ...newPostState }
+  setLivePost: (newPostState) => set((state) => ({
+    livePost: { ...state.livePost, ...newPostState }
   })),
 
   setPosts: (posts) => set({ posts }),
@@ -65,6 +56,13 @@ export const usePostStore = create<PostState>((set) => ({
 
   // Reset all post state
   resetPostState: () => set(initialState),
+
+  resetLivePost: () => {
+    set((state) => ({
+      livePost: { ...initialState.livePost }
+    }));
+  },
 }));
 
 export const resetPostState = usePostStore.getState().resetPostState;
+export const resetLivePost = usePostStore.getState().resetLivePost;
