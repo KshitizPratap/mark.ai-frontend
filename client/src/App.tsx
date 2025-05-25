@@ -10,24 +10,19 @@ import Calendar from "@/pages/Calendar";
 import Mind from "@/pages/Mind";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import EditPostProvider from "@/context/EditPostProvider";
+import AuthProvider from "@/context/AuthProvider";
 import Layout from "./components/layout/Layout";
 import CreatePost from "./pages/CreatePost";
 import FullScreenLoader from "./components/ui/FullScreenLoader";
-import { useAuthStore } from "./store/useAuthStore";
-
-// AuthInitializer component to load auth state on app start
-function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { isVerifying } = useAuthStore();
-
-  return (
-    <>
-      {isVerifying && <FullScreenLoader message="Loading please wait..." />}
-      {children}
-    </>
-  );
-}
+import { useAuth } from "@/context/AuthProvider";
 
 function Router() {
+  const { isVerifying } = useAuth();
+  
+  if (isVerifying) {
+    return <FullScreenLoader message="Loading please wait..." />;
+  }
+
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -46,12 +41,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <EditPostProvider>
-          <Toaster />
-          <AuthInitializer>
+        <AuthProvider>
+          <EditPostProvider>
+            <Toaster />
             <Router />
-          </AuthInitializer>
-        </EditPostProvider>
+          </EditPostProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

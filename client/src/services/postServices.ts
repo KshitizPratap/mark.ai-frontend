@@ -33,11 +33,6 @@ interface UpdatePostRequest {
   platformId?: string;
 }
 
-// Interface for delete post request
-interface DeletePostRequest {
-  postId: string;
-}
-
 // Interface for get posts filters
 interface GetPostsFilters {
   platform?: PlatformType[];
@@ -103,11 +98,10 @@ export const updatePost = async (postData: UpdatePostRequest, postId: string) =>
   }
 };
 
-export const deletePost = async (postData: DeletePostRequest) => {
+export const deletePost = async (postId: string) => {
   try {
     const response = await doDELETE(
-      `${BASE_URL}/post/delete`,
-      postData
+      `${BASE_URL}/post/delete/${postId}`
     );
     return response.data;
   } catch (error) {

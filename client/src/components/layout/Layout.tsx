@@ -38,8 +38,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [leftPanelSize, setLeftPanelSize] = useState(30);
-  const [rightPanelSize, setRightPanelSize] = useState(70);
+  const [leftPanelSize, setLeftPanelSize] = useState(40);
+  const [rightPanelSize, setRightPanelSize] = useState(60);
   const [mobileView, setMobileView] = useState<'chat' | 'content'>('chat');
   const { width } = useWindowSize();
   

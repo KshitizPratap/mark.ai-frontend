@@ -1,9 +1,11 @@
 import { MessageType } from "@/components/ChatInterface";
-import { PostType } from "@/types";
+import { AyrShareSocialHandles, PostType } from "@/types";
 import { PlatformType } from "@/types/post";
 
 // export const BASE_URL = "http://localhost:5000";
 export const BASE_URL = 'https://mark-ai-backend-1057029383450.asia-south2.run.app';
+
+export const AYRSHARE = "ayrshare";
 
 export const API_METHODS = {
     GET: "GET",
@@ -30,24 +32,20 @@ export const postTypes: PostType[] = [
 
 export const socialMedia = [
     {
-        isConnected: true,
         img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png",
         label: "instagram"
     },
     {
-        isConnected: true,
         img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjvzC_QRv6moAhgNb5C6e3yicKgFND1g2RwA&s",
         label: "facebook"
     },
     {
-        isConnected: false,
          img: "https://pngdownload.io/wp-content/uploads/2023/12/X-Logo-Twitter-Logo-Iconic-Social-Media-Brand-Symbol-PNG-Transparent-Recognizable-Emblem-jpg.webp",
         label: "twitter"
     },
     {
-        isConnected: false,
         img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmOQT83dtIlgCmJiM8X08gAFfHSDkuxBXA1Q&s",
-        label: "linkedin"
+        label: "threads"
     },
 ]
 
@@ -77,3 +75,20 @@ export const initialMessages: MessageType[] = [
     { name: "threads", icon: "@" },
     { name: "facebook", icon: "f" },
   ];
+
+  export const initialiseChatWithMark = "This is the system message. The user is online. Send greetings and provide 1 liner update. DO NOT mention anything about system. Just greet the user."
+
+  export const intialSocialHandlesMapping: AyrShareSocialHandles =  {
+    "bluesky": false,
+  "facebook": false,
+  "gmb": false,
+  "instagram": false,
+  "linkedin": false,
+  "pinterest": false,
+  "reddit": false,
+  "telegram": false,
+  "threads": false,
+  "tiktok": false,
+  "twitter": false,
+  "youtube": false
+  };

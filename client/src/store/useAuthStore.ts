@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import { User } from '@/types';
+import { AyrShareSocialHandles, User } from '@/types';
 import { removeValue, STORAGE_KEYS } from '@/commons/storage';
 import { resetPostState } from './usePostStore';
+import { intialSocialHandlesMapping } from '@/commons/constant';
 
 interface PostState {
-  isAuth: boolean;
+  isAuth: boolean | null;
   setIsAuth: (isAuth: boolean) => void;
   userDetails?: User;
   setUserDetails: (userDetails: User) => void;
@@ -17,15 +18,19 @@ interface PostState {
   logout: () => void;
   isVerifying: boolean;
   setIsVerifying: (isVerifying: boolean) => void;
+  userSocialHandles: AyrShareSocialHandles;
+  setUserSocialHandles: (userSocialHandles: AyrShareSocialHandles) => void;
 }
 
 export const useAuthStore = create<PostState>((set) => ({
-  isAuth: false,
+  isAuth: null,
+  isOpen: false,
+  view: 'signin',
+  isVerifying: false,
+  userSocialHandles: intialSocialHandlesMapping,
   setIsAuth: (isAuth: boolean) => set({isAuth}),
   setUserDetails: (userDetails: User) => set({userDetails}),
-  isOpen: false,
   setIsOpen: (isOpen: boolean) => set({isOpen}),
-  view: 'signin',
   setView: (view) => set({ view }),
   setToken: (token: string) => set({token}),
   logout: () => {
@@ -33,6 +38,6 @@ export const useAuthStore = create<PostState>((set) => ({
     removeValue(STORAGE_KEYS.TOKEN);
     resetPostState();
   },
-  isVerifying: false,
-  setIsVerifying: (isVerifying: boolean) => set({isVerifying})
+  setIsVerifying: (isVerifying: boolean) => set({isVerifying}),
+  setUserSocialHandles: (userSocialHandles: AyrShareSocialHandles) => set({userSocialHandles}),
 }));

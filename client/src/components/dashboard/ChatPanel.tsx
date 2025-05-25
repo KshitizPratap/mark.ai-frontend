@@ -6,6 +6,7 @@ import { Message } from "@/types";
 import { chatWithMark } from "@/services/chatServices";
 import { useAuthStore } from "@/store/useAuthStore";
 import { marked } from 'marked';
+import { initialiseChatWithMark, initialMessages } from "@/commons/constant";
 
 const ChatPanel = () => {
   const {
@@ -35,9 +36,9 @@ const ChatPanel = () => {
   useEffect(() => {
     if (messages && messages.length === 0 && isAuth) {
       setIsThinking(true);
-      handleChatResponse("Hi There!");
+      handleChatResponse(initialiseChatWithMark);
     }
-  }, []);
+  }, [isAuth]);
 
   useEffect(() => {
     const scrollTimeout = setTimeout(() => {
@@ -157,7 +158,7 @@ const ChatPanel = () => {
 
     return (
       <div 
-        className="max-w-none whitespace-pre-wrap"
+        className="max-w-none"
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
     );

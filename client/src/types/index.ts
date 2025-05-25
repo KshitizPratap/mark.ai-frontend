@@ -1,3 +1,5 @@
+import { PlatformType } from "./post";
+
 export interface Message {
   id: string;
   text: string;
@@ -40,4 +42,8 @@ export interface UserCredential {
   lastName?: string;
   rememberMe?: boolean;
   agreeToTerms?: boolean;
+}
+
+export type AyrShareSocialHandles = {
+  [key in PlatformType]: boolean;
 }

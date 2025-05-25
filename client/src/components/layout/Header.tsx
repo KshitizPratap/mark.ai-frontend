@@ -1,24 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import markAiLogo from "../../assets/logo.png"; // Corrected file name to logo.png
-import { socialMedia } from "@/commons/constant";
+import { AYRSHARE, socialMedia } from "@/commons/constant";
 import ConnectSocialIcon from "../ui/ConnectSocialIcon";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuthStore } from "@/store/useAuthStore";
-import { generateAyrshareToken } from "@/services/ayrShareServices";
+import { generateAyrshareToken, getAyrshareSocialHandles } from "@/services/ayrShareServices";
+import { PlatformName } from "@/types";
+import { PlatformType } from '@/types/post';
+import { convertSocialHandles } from "@/commons/utils";
+
+const headerBg = "bg-[#11132f]";
+const headerBorder = "border-gray-700/50";
 
 const Header = () => {
-  const headerBg = "bg-[#11132f]";
-  const headerBorder = "border-gray-700/50";
-  const { logout } = useAuthStore();
+  const { logout, setUserSocialHandles, userSocialHandles } = useAuthStore();
+  const location = window.location.href;
+  const queryParams = new URLSearchParams(location.split('?')[1]);
+  const source = queryParams.get('source') || "";
   const [loadingPlatform, setLoadingPlatform] = useState<string | null>(null);
+
+  useEffect(() => {
+    if(source === AYRSHARE){
+      handleAyrshareSocialHandles();
+    }
+  }, [source]);
+
+  const handleAyrshareSocialHandles = async () => {
+     try{
+      const socialMediaHandles = await getAyrshareSocialHandles();
+      setUserSocialHandles(convertSocialHandles(socialMediaHandles));
+     } catch(error){
+      console.error(error)
+     }
+  }
 
   const handleAyrshareConnection = async (platform: string) => {
     try {
         setLoadingPlatform(platform);
-        const response = await generateAyrshareToken();
+        const response = await generateAyrshareToken([platform] as PlatformName[]);
         const currentUrl = encodeURIComponent(window.location.href);
-        const url = `${response.url}&redirect=${currentUrl}`;
+        const hasSourceParam = window.location.href.includes(`source=${AYRSHARE}`);
+        
+        const url = `${response.url}&redirect=${currentUrl}${hasSourceParam ? '' : `?source=${AYRSHARE}`}`;
         window.open(url, "_self");
     } catch (error) {
         console.error('Failed to connect social media:', error);
@@ -42,16 +66,20 @@ const Header = () => {
       </Link>
 
       <div className="flex items-center gap-4 h-[50px]">
-        {socialMedia.map(({ img, isConnected, label }, idx) => (
-          <ConnectSocialIcon
-            key={img + idx}
-            image={img}
-            isConnected={isConnected}
-            label={label}
-            handleAyrshareConnection={handleAyrshareConnection}
-            isLoading={loadingPlatform === label}
-          />
-        ))}
+        {socialMedia.map(({ img, label }, idx) => {
+          const isConnected = userSocialHandles[label.toLowerCase() as PlatformType]
+
+          return  (
+            <ConnectSocialIcon
+              key={img + idx}
+              image={img}
+              isConnected={isConnected}
+              label={label}
+              handleAyrshareConnection={handleAyrshareConnection}
+              isLoading={loadingPlatform === label}
+            />
+          )
+        })}
       </div>
 
       <button

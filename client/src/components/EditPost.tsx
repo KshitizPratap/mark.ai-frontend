@@ -53,19 +53,10 @@ const EditPost: React.FC<EditPostProps> = ({
   useEffect(() => {
     if (post) {
       setEditedPost(post);
-      // Initialize date and time fields
       const postDate = new Date(post.scheduleDate);
       
-      // Convert to local time based on timezone offset
-      const timeZoneOffset = timeZoneLabel.replace('GMT', '');
-      const [hours, minutes] = timeZoneOffset.split(':').map(Number);
-      const offsetInMinutes = (hours * 60) + (minutes * (hours < 0 ? -1 : 1));
-      
-      // Adjust the time based on timezone
-      const localDate = new Date(postDate.getTime() + (offsetInMinutes * 60 * 1000));
-      
       setDate(postDate);
-      // Set isEditing based on post status
+
       setIsEditing(post.status === 'draft');
     }
   }, [post, timeZoneLabel]);
@@ -124,26 +115,14 @@ const EditPost: React.FC<EditPostProps> = ({
   const handleDateChange = (newDate: Date) => {
     setDate(newDate);
   };
-  
-  const handleSaveDraft = () => {
-    if (!isEditing) return;
-    
-    const updatedPost = {
-      ...editedPost,
-      scheduleDate: date,
-      status: 'draft' as PostStatus
-    };
-    onSave(updatedPost);
-    setIsEditing(false);
-  };
 
-  const handleSchedule = () => {
+  const handleSave = (status: PostStatus) => {
     if (!isEditing) return;
     
     const updatedPost = {
       ...editedPost,
       scheduleDate: date,
-      status: 'schedule' as PostStatus
+      status
     };
     onSave(updatedPost);
     setIsEditing(false);
@@ -565,8 +544,8 @@ const EditPost: React.FC<EditPostProps> = ({
                 ) : (
                   <div className={cn("flex rounded-lg shadow-sm relative w-full")}>
                     <ScheduleActionButton
-                      onSchedule={() => isEditing && handleSchedule()}
-                      onDraft={() => isEditing && handleSaveDraft()}
+                      onSchedule={() => isEditing && handleSave('schedule')}
+                      onDraft={() => isEditing && handleSave('draft')}
                       className={!isEditing ? "opacity-70" : ""}
                       disabled={!isEditing}
                     />
@@ -718,8 +697,8 @@ const EditPost: React.FC<EditPostProps> = ({
                 ) : (
                   <div className={cn("flex rounded-lg shadow-sm relative w-full lg:w-auto")}>
                     <ScheduleActionButton
-                      onSchedule={() => isEditing && handleSchedule()}
-                      onDraft={() => isEditing && handleSaveDraft()}
+                      onSchedule={() => isEditing && handleSave('schedule')}
+                      onDraft={() => isEditing && handleSave('draft')}
                       className={!isEditing ? "opacity-70" : ""}
                       disabled={!isEditing}
                     />

@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   return (
     <Route path={path}>
       {() => {
-        if (!isAuth) {
+        if (isAuth === false) {
           navigate("/");
           return null;
         }

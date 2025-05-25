@@ -8,7 +8,6 @@ import { CalendarView } from '@/types/post';
 export default function CalendarRoute() {
   const today = new Date();
   const posts = usePostStore((state) => state.posts);
-  const [isLoading, setIsLoading] = useState(false);
   const [timeframe, setTimeframe] = useState<CalendarView>('month');
 
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
@@ -27,78 +26,42 @@ export default function CalendarRoute() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const weekNavigationCountRef = useRef<number>(0);
 
+  // Effect for syncing posts when month or week changes
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    setIsLoading(true);
-    debounceRef.current = setTimeout(() => {
-      if (timeframe === 'month') {
-        const syncDate = new Date();
-        syncDate.setMonth(selectedMonth);
-        syncDate.setFullYear(selectedYear);
-        syncPostsFromDB(syncDate);
-      } else if (timeframe === 'week') {
-        // sync after approximately a month's worth of weeks
-        if (Math.abs(weekNavigationCountRef.current) >= 3) {
-          const syncDate = new Date();
-          syncDate.setDate(today.getDate());
-          syncPostsFromDB(syncDate);
-          weekNavigationCountRef.current = 0; // Reset counter after sync
+    
+    debounceRef.current = setTimeout(async () => {
+      const shouldSync = timeframe === 'month' || (timeframe === 'week' && Math.abs(weekNavigationCountRef.current) >= 3);
+      
+      if (shouldSync) {
+        await syncPostsFromDB(getDisplayDate());
+        if (timeframe === 'week') {
+          weekNavigationCountRef.current = 0;
         }
       }
-      setIsLoading(false);
     }, 500);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [timeframe, selectedMonth, selectedYear, weekStart, weekEnd]);
+  }, [selectedMonth, selectedYear, weekStart, weekEnd]);
 
-  const handlePrevPeriod = () => {
-    if (timeframe === 'month') {
-      if (selectedMonth === 0) {
-        setSelectedMonth(11);
-        setSelectedYear(selectedYear - 1);
-      } else {
-        setSelectedMonth(selectedMonth - 1);
-      }
-    } else {
-      const newWeekStart = new Date(weekStart);
-      newWeekStart.setDate(weekStart.getDate() - 7);
-      const newWeekEnd = new Date(weekEnd);
-      newWeekEnd.setDate(weekEnd.getDate() - 7);
-      setWeekStart(newWeekStart);
-      setWeekEnd(newWeekEnd);
-      weekNavigationCountRef.current -= 1;
-    }
-  };
-
-  const handleNextPeriod = () => {
-    if (timeframe === 'month') {
-      if (selectedMonth === 11) {
-        setSelectedMonth(0);
-        setSelectedYear(selectedYear + 1);
-      } else {
-        setSelectedMonth(selectedMonth + 1);
-      }
-    } else {
-      const newWeekStart = new Date(weekStart);
-      newWeekStart.setDate(weekStart.getDate() + 7);
-      const newWeekEnd = new Date(weekEnd);
-      newWeekEnd.setDate(weekEnd.getDate() + 7);
-      setWeekStart(newWeekStart);
-      setWeekEnd(newWeekEnd);
-      weekNavigationCountRef.current += 1;
-    }
-  };
+  useEffect(() => {
+    syncPostsFromDB(getDisplayDate());
+    weekNavigationCountRef.current = 0;
+  }, [timeframe]);
 
   const getDisplayDate = () => {
+    let date;
     if (timeframe === 'month') {
-      const date = new Date();
+      date = new Date();
       date.setMonth(selectedMonth);
       date.setFullYear(selectedYear);
-      return date;
+    } else {
+      date = weekStart;
     }
-    return weekStart;
+    usePostStore.getState().setDisplayDate(date);
+    return date;
   };
 
   return (
@@ -109,16 +72,18 @@ export default function CalendarRoute() {
         setTimeframe={setTimeframe}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
+        setSelectedMonth={setSelectedMonth}
+        setSelectedYear={setSelectedYear}
         weekStart={weekStart}
         weekEnd={weekEnd}
-        handlePrevPeriod={handlePrevPeriod}
-        handleNextPeriod={handleNextPeriod}
+        setWeekStart={setWeekStart}
+        setWeekEnd={setWeekEnd}
+        weekNavigationCountRef={weekNavigationCountRef}
       />
       <div className="overflow-auto">
         <SocialCalendar
-          posts={posts}
+          posts={posts.filter(post => post.status !== 'deleted')}
           timeZoneLabel="GMT+05:30"
-          isLoading={isLoading}
           currentView={timeframe}
           displayDate={getDisplayDate()}
         />

@@ -8,10 +8,13 @@ interface ActionScreenHeaderProps {
   setTimeframe: (timeframe: CalendarView) => void;
   selectedMonth: number;
   selectedYear: number;
+  setSelectedMonth: (month: number) => void;
+  setSelectedYear: (year: number) => void;
   weekStart: Date;
   weekEnd: Date;
-  handlePrevPeriod: () => void;
-  handleNextPeriod: () => void;
+  setWeekStart: (date: Date) => void;
+  setWeekEnd: (date: Date) => void;
+  weekNavigationCountRef: React.MutableRefObject<number>;
 }
 
 const months = [
@@ -46,11 +49,53 @@ const ActionScreenHeader: React.FC<ActionScreenHeaderProps> = ({
   setTimeframe,
   selectedMonth,
   selectedYear,
+  setSelectedMonth,
+  setSelectedYear,
   weekStart,
   weekEnd,
-  handlePrevPeriod,
-  handleNextPeriod,
+  setWeekStart,
+  setWeekEnd,
+  weekNavigationCountRef,
 }) => {
+
+  const handlePrevPeriod = () => {
+    if (timeframe === 'month') {
+      if (selectedMonth === 0) {
+        setSelectedMonth(11);
+        setSelectedYear(selectedYear - 1);
+      } else {
+        setSelectedMonth(selectedMonth - 1);
+      }
+    } else {
+      const newWeekStart = new Date(weekStart);
+      newWeekStart.setDate(weekStart.getDate() - 7);
+      const newWeekEnd = new Date(weekEnd);
+      newWeekEnd.setDate(weekEnd.getDate() - 7);
+      setWeekStart(newWeekStart);
+      setWeekEnd(newWeekEnd);
+      weekNavigationCountRef.current -= 1;
+    }
+  };
+
+  const handleNextPeriod = () => {
+    if (timeframe === 'month') {
+      if (selectedMonth === 11) {
+        setSelectedMonth(0);
+        setSelectedYear(selectedYear + 1);
+      } else {
+        setSelectedMonth(selectedMonth + 1);
+      }
+    } else {
+      const newWeekStart = new Date(weekStart);
+      newWeekStart.setDate(weekStart.getDate() + 7);
+      const newWeekEnd = new Date(weekEnd);
+      newWeekEnd.setDate(weekEnd.getDate() + 7);
+      setWeekStart(newWeekStart);
+      setWeekEnd(newWeekEnd);
+      weekNavigationCountRef.current += 1;
+    }
+  };
+
   return (
     <div className="relative px-5 pt-2 bg-white mb-5">
       <h2 className="text-2xl font-semibold text-gray-800 m-0 pl-5">{title}</h2>

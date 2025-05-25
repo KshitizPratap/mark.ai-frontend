@@ -66,49 +66,31 @@ export const useEditPost = () => {
   const onSave = useCallback(async (updatedPost: Post) => {
     setIsLoading(true);
     try {
-      // Format the date as YYYY-MM-DD
-      const formattedDate = updatedPost.scheduleDate.toISOString();
-      
-      let response;
-      if (updatedPost.status === 'draft' && updatedPost._id) {
-        response = await updatePost({
-          title: updatedPost.title,
-          content: updatedPost.content,
-          platform: updatedPost.platform,
-          status: updatedPost.status,
-          hashtag: updatedPost.hashtag,
-          mediaUrl: updatedPost.mediaUrl,
-          postType: updatedPost.postType,
-          scheduleDate: formattedDate,
-          publish: 'true',
-          ayrshareId: updatedPost.ayrshareId || '',
-          platformId: updatedPost.platformId
-        }, updatedPost._id);
-      } else {
-        response = await createPost({
-          title: updatedPost.title,
-          content: updatedPost.content,
-          platform: updatedPost.platform,
-          status: updatedPost.status,
-          hashtag: updatedPost.hashtag,
-          mediaUrl: updatedPost.mediaUrl,
-          postType: updatedPost.postType,
-          scheduleDate: formattedDate,
-          publish: 'true',
-          ayrshareId: updatedPost.ayrshareId || ''
-        });
-      }
+      const response = await updatePost({
+        title: updatedPost.title,
+        content: updatedPost.content,
+        platform: updatedPost.platform,
+        status: updatedPost.status,
+        hashtag: updatedPost.hashtag,
+        mediaUrl: updatedPost.mediaUrl,
+        postType: updatedPost.postType,
+        scheduleDate: updatedPost.scheduleDate.toISOString(),
+        publish: 'true',
+        ayrshareId: updatedPost.ayrshareId || '',
+        platformId: updatedPost.platformId
+      }, updatedPost._id || '');
 
-      if (response && response.success) {
-        toast({
-          title: 'Success',
-          description: updatedPost.status === 'schedule' ? 'Post scheduled successfully!' : 'Post saved as draft!',
-        });
-        await syncPostsFromDB(displayDate);
-        setIsOpen(false);
-      } else {
+      if (!response?.success) {
         throw new Error('Failed to save post');
       }
+
+      toast({
+        title: 'Success',
+        description: updatedPost.status === 'schedule' ? 'Post scheduled successfully!' : 'Post saved as draft!',
+      });
+      
+      await syncPostsFromDB(displayDate);
+      setIsOpen(false);
     } catch (error) {
       console.error('Failed to save post:', error);
       toast({
@@ -127,7 +109,7 @@ export const useEditPost = () => {
     setIsLoading(true);
     try {
       // Call the deletePost API
-      const response = await deletePost({ postId: post._id });
+      const response = await deletePost(post._id);
       if (response && response.success) {
         toast({
           title: 'Success',

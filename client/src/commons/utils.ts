@@ -1,3 +1,6 @@
+import { AyrShareSocialHandles, PlatformName } from "@/types";
+import { intialSocialHandlesMapping } from "./constant";
+
 export function convertMarkdownToHTML(md: string) {
     return md
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -12,3 +15,11 @@ export function convertMarkdownToHTML(md: string) {
       .replace(/---/g, '<hr />');
   }
   
+
+export const convertSocialHandles = (socialHandles: PlatformName[]) => {
+  socialHandles.forEach((socialHandle) => {
+    intialSocialHandlesMapping[socialHandle.toLowerCase() as keyof AyrShareSocialHandles] = true;
+  });
+
+  return intialSocialHandlesMapping;
+}

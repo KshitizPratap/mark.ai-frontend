@@ -21,12 +21,12 @@ export const doPOST = async function (url:String, data:any) {
   }
 };
 
-export const doDELETE = async function (url:string, data?: any) {
+export const doDELETE = async function (url:string) {
   try {
-    const response = await apiHandler(url, API_METHODS.DELETE, data)
+    const response = await apiHandler(url, API_METHODS.DELETE)
     return response;
   } catch (err:any) {
-    throw err;
+    throw err?.message ?? 'An error occurred during the DELETE request';
   }
 };
 
