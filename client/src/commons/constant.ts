@@ -47,6 +47,10 @@ export const socialMedia = [
         img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmOQT83dtIlgCmJiM8X08gAFfHSDkuxBXA1Q&s",
         label: "threads"
     },
+    {
+        img: "https://1000logos.net/wp-content/uploads/2017/03/Color-of-the-LinkedIn-Logo.jpg",
+        label: "linkedin"
+    },
 ]
 
 export const initialMessages: MessageType[] = [
