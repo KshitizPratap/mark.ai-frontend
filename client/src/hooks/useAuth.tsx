@@ -43,7 +43,7 @@ export const useAuth = () => {
         description: "You have been logged in successfully!",
       });
       setIsOpen(false);
-      navigate("/dashboard");
+      navigate("/create");
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -80,7 +80,7 @@ export const useAuth = () => {
         description: "Your account has been created successfully!",
       });
       setIsOpen(false);
-      navigate("/dashboard");
+      navigate("/create");
     } catch (error) {
       console.error("Registration error:", error);
       toast({

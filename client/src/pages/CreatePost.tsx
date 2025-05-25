@@ -8,24 +8,25 @@ import { useToast } from "@/hooks/use-toast";
 import { updatePost } from "@/services/postServices";
 import useEditPost from "@/hooks/use-edit-post";
 import { createDummyLivePost } from "@/services/authServices";
+import { uploadSingleMedia } from "@/services/uploadServices";
 
 const CreatePost = () => {
   const {
     livePost,
     setLivePost,
   } = usePostStore();
-  const { platform, postType, scheduleDate } = livePost;
+  const { platform, postType, scheduleDate, mediaUrl } = livePost;
 
   const { toast } = useToast();
   const { onSave } = useEditPost();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     try {
       if (livePost.scheduleDate) {
-        setDate(livePost.scheduleDate); // Set the main date object
+        setDate(livePost.scheduleDate);
       }
     } catch (error) {
       console.error("Error parsing scheduleDate prop:", error);
@@ -33,13 +34,6 @@ const CreatePost = () => {
       setDate(now);
     }
   }, [livePost.scheduleDate]);
-
-  useEffect(() => {
-    if (uploadedImageFile) {
-      const url = URL.createObjectURL(uploadedImageFile);
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [uploadedImageFile]);
 
   const updatePostHandler = async (
     key: string,
@@ -91,26 +85,42 @@ const CreatePost = () => {
   };
   
   // Image upload handler
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setUploadedImageFile(file);
+      setIsImageUploading(true);
+      try {
+        const response = await uploadSingleMedia(file);
+        
+        setLivePost({
+          ...livePost,
+          mediaUrl: [response]
+        });
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+      } finally {
+        setIsImageUploading(false);
+      }
     }
   };
 
   const handleImageDelete = () => {
-    setUploadedImageFile(null);
-    setLivePost({ mediaUrl: [] });
+    setLivePost({ ...livePost, mediaUrl: [] });
   };
 
-  const handleSave = (status: PostStatus) => {
+  const handleSave = async (status: PostStatus) => {
     const updatedPost = {
       ...livePost,
       scheduleDate: date || new Date(),
       status,
     };
     resetLivePost();
-    onSave(updatedPost);
+    await onSave(updatedPost);
     setTimeout(() => {
       createDummyLivePost();
     }, 500);
@@ -172,8 +182,9 @@ const CreatePost = () => {
               onDateChange={handleDateChange}
               hideFooter={false}
               onImageUpload={handleImageUpload}
-              uploadedImageFile={uploadedImageFile}
+              uploadedImageFile={mediaUrl?.[0] || ""}
               onImageDelete={handleImageDelete}
+              isImageUploading={isImageUploading}
             />
           </div>
         </div>

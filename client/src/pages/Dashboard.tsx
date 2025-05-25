@@ -173,7 +173,7 @@ const Dashboard = () => {
 
   const handlePostClick = (post: PostType) => {
     if (post) {
-      editPostContext.onOpen(post._id, post, 'GMT+00:00');
+      editPostContext.onOpen(post._id, post);
     }
   };
 

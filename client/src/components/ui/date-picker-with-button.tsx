@@ -33,7 +33,7 @@ const DatePickerWithButton: React.FC<DatePickerWithButtonProps> = ({
       <button
         onClick={handleButtonClick}
         disabled={disabled}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 ${className} ${disabled ? "cursor-not-allowed opacity-75" : ""}`}
+        className={`flex items-center justify-center gap-3 px-4 py-2 rounded-lg text-sm font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 ${className} ${disabled ? "cursor-not-allowed opacity-75" : ""}`}
       >
         {displayDate}
         <svg

@@ -168,7 +168,7 @@ export default function Home() {
           {isAuth ? (
             <>
               <button 
-                onClick={() => setLocation('/dashboard')}
+                onClick={() => setLocation('/create')}
                 style={{ 
                   backgroundColor: '#1e293b', 
                   color: 'white', 
@@ -178,7 +178,7 @@ export default function Home() {
                   cursor: 'pointer',
                   fontSize: 'clamp(12px, 3vw, 14px)',
                   whiteSpace: 'nowrap'
-                }}>Dashboard</button>
+                }}>Create Post</button>
               <button 
                 onClick={async () => {
                   await logout();

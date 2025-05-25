@@ -38,15 +38,15 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [leftPanelSize, setLeftPanelSize] = useState(40);
-  const [rightPanelSize, setRightPanelSize] = useState(60);
+  const [leftPanelSize, setLeftPanelSize] = useState(30);
+  const [rightPanelSize, setRightPanelSize] = useState(70);
   const [mobileView, setMobileView] = useState<'chat' | 'content'>('chat');
   const { width } = useWindowSize();
   
   const isMobile = width < 1024; // 1024px is the lg breakpoint in Tailwind
 
   // Extract the current route for highlighting in the sidebar
-  const currentRoute = location.split('/')[1] || 'dashboard';
+  const currentRoute = location.split('/')[1] || 'create';
 
   // Function to handle panel resize
   const handlePanelResize = (sizes: number[]) => {

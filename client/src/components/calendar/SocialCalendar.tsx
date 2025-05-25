@@ -3,10 +3,10 @@ import { Post, CalendarView } from '@/types/post';
 import MonthView from './month/MonthView';
 import WeekView from './week/WeekView';
 import { useEditPostContext } from '@/context/EditPostProvider';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface SocialCalendarProps {
   posts: Post[];
-  timeZoneLabel?: string;
   minWidth?: string | number;
   maxWidth?: string | number;
   currentView?: CalendarView;
@@ -15,12 +15,12 @@ interface SocialCalendarProps {
 
 const SocialCalendar: React.FC<SocialCalendarProps> = ({
   posts = [],
-  timeZoneLabel = 'GMT+00:00',
   minWidth = '300px',
   currentView = 'month',
   displayDate = new Date(),
 }) => {
   const editPostContext = useEditPostContext();
+  const { timeZoneLabel = 'GMT+00:00' } = useAuthStore();
 
   const handlePostClick = (postId: string | number) => {
     const post = posts.find(p => p._id === postId);
@@ -29,7 +29,7 @@ const SocialCalendar: React.FC<SocialCalendarProps> = ({
         ...post,
         postType: post.postType || 'post'
       };
-      editPostContext.onOpen(post._id, postWithRequiredFields, timeZoneLabel);
+      editPostContext.onOpen(post._id, postWithRequiredFields);
     }
   };
 

@@ -7,12 +7,11 @@ interface EditPostContextType {
   isOpen: boolean;
   post: Post;
   isLoading: boolean;
-  onOpen: (postId?: string, postData?: Post, timeZoneLabel?: string) => void;
+  onOpen: (postId?: string, postData?: Post) => void;
   onClose: () => void;
   onSave: (post: Post) => Promise<void>;
   onDelete: () => Promise<void>;
   onGenerate: (prompt: string) => Promise<void>;
-  timeZoneLabel?: string;
 }
 
 // Create context
@@ -23,17 +22,9 @@ export const EditPostProvider: React.FC<{ children: React.ReactNode }> = ({
   children 
 }) => {
   const editPost = useEditPost();
-  const [timeZoneLabel, setTimeZoneLabel] = React.useState<string>('GMT+00:00');
-
-  const onOpen = (postId?: string, postData?: Post, timeZone?: string) => {
-    if (timeZone) {
-      setTimeZoneLabel(timeZone);
-    }
-    editPost.onOpen(postId, postData);
-  };
 
   return (
-    <EditPostContext.Provider value={{ ...editPost, onOpen, timeZoneLabel }}>
+    <EditPostContext.Provider value={editPost}>
       <EditPost 
         isOpen={editPost.isOpen}
         onClose={editPost.onClose}

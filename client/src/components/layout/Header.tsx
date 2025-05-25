@@ -29,7 +29,7 @@ const Header = () => {
   const handleAyrshareSocialHandles = async () => {
      try{
       const socialMediaHandles = await getAyrshareSocialHandles();
-      setUserSocialHandles(convertSocialHandles(socialMediaHandles));
+      setUserSocialHandles(socialMediaHandles);
      } catch(error){
       console.error(error)
      }

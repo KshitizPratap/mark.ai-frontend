@@ -39,9 +39,9 @@ const ScheduleActionButton = ({
   };
 
   return (
-    <div className={`flex rounded-lg shadow-sm relative ${className}`}>
+    <div className={`w-full flex rounded-lg shadow-sm relative ${className}`}>
       <button 
-        className={`px-6 py-2 text-sm font-medium bg-cyan-500 text-white whitespace-nowrap rounded-l-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 ${disabled ? 'opacity-70 cursor-not-allowed' : 'hover:bg-cyan-600'}`}
+        className={`w-full px-6 py-2 text-sm font-medium bg-cyan-500 text-white whitespace-nowrap rounded-l-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 ${disabled ? 'opacity-70 cursor-not-allowed' : 'hover:bg-cyan-600'}`}
         onClick={handleMainButtonClick}
         disabled={disabled}
         tabIndex={disabled ? -1 : 0}
