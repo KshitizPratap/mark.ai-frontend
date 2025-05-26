@@ -2,8 +2,8 @@ import { MessageType } from "@/components/ChatInterface";
 import { AyrShareSocialHandles, PostType } from "@/types";
 import { PlatformType } from "@/types/post";
 
-export const BASE_URL = "http://localhost:5000";
-// export const BASE_URL = 'https://mark-ai-backend-1057029383450.asia-south2.run.app';
+// export const BASE_URL = "http://localhost:5000";
+export const BASE_URL = 'https://mark-ai-backend-1057029383450.asia-south2.run.app';
 
 export const AYRSHARE = "ayrshare";
 
