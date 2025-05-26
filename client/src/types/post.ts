@@ -1,22 +1,9 @@
+import { PlatformType } from ".";
 export interface PostUser {
   id: string | number;
   avatarUrl: string;
   name?: string;
 }
-
-export type PlatformType =
-  | "bluesky"
-  | "facebook"
-  | "gmb"
-  | "instagram"
-  | "linkedin"
-  | "pinterest"
-  | "reddit"
-  | "telegram"
-  | "threads"
-  | "tiktok"
-  | "twitter"
-  | "youtube";
 
 export type PostStatus = 'draft' | 'schedule' | 'live' | 'published' | 'deleted';
 

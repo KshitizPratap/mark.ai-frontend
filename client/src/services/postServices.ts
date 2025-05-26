@@ -1,7 +1,8 @@
 import { BASE_URL } from '@/commons/constant';
 import { doGET, doPOST, doPUT, doDELETE } from '@/commons/serviceUtils';
 import axios from 'axios';
-import { PlatformType, PostStatus, PostApiDetails } from '@/types/post';
+import { PostStatus, PostApiDetails } from '@/types/post';
+import { PlatformType } from '@/types';
 
 // Interface for get posts filters
 interface GetPostsFilters {

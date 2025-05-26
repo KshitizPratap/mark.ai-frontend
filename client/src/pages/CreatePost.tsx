@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { resetLivePost, usePostStore } from "@/store/usePostStore";
-import { PlatformType, PostStatus } from "@/types/post";
+import { useAuthStore } from "@/store/useAuthStore";
+import { PostStatus } from "@/types/post";
+import { PlatformType } from "@/types";
 import PlatformToggle from "@/components/dashboard/PlatformToggle";
 import SocialMediaPostPreview from "@/components/ui/social-media-post-preview";
-import { platformsRow1, postTypes } from "@/commons/constant";
+import { postTypes } from "@/commons/constant";
 import { useToast } from "@/hooks/use-toast";
 import { updatePost } from "@/services/postServices";
 import useEditPost from "@/hooks/use-edit-post";
@@ -11,10 +13,8 @@ import { createDummyLivePost } from "@/services/authServices";
 import { uploadSingleMedia } from "@/services/uploadServices";
 
 const CreatePost = () => {
-  const {
-    livePost,
-    setLivePost,
-  } = usePostStore();
+  const { livePost, setLivePost } = usePostStore();
+  const { getConnectedPlatforms } = useAuthStore();
   const { platform, postType, scheduleDate, mediaUrl } = livePost;
 
   const { toast } = useToast();
@@ -22,6 +22,8 @@ const CreatePost = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
+
+  const connectedPlatforms = getConnectedPlatforms();
 
   useEffect(() => {
     try {
@@ -65,14 +67,14 @@ const CreatePost = () => {
     }
   };
 
-  const handlePlatformToggle = async (platformName: PlatformType) => {
+  const handlePlatformToggle = async (platformName: PlatformType, isActive: boolean) => {
     const currentPlatforms = Array.isArray(platform) ? platform : [];
 
-    const newPlatforms = currentPlatforms.includes(platformName)
-      ? currentPlatforms.filter((p) => p !== platformName)
-      : [...currentPlatforms, platformName];
+    const newPlatforms = isActive
+      ? [...currentPlatforms, platformName]
+      : currentPlatforms.filter((p) => p !== platformName);
     
-    updatePostHandler("platforms", newPlatforms);
+    updatePostHandler("platform", newPlatforms);
   };
 
   const handlePostTypeClick = (type: "post" | "story" | "reel") => {
@@ -149,15 +151,15 @@ const CreatePost = () => {
         </div>
 
         <div className={`px-5 py-2 border-b border-gray-200 bg-gray-50 shrink-0`}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-4 gap-x-4 sm:gap-x-6">
-            {platformsRow1.map((platformObj) => (
-              <PlatformToggle
-                key={platformObj.name}
-                label={platformObj.name.charAt(0).toUpperCase() + platformObj.name.slice(1)}
-                icon={platformObj.icon}
-                active={!!platform?.includes(platformObj.name)}
-                onToggle={() => handlePlatformToggle(platformObj.name)}
-              />
+          <div className="flex flex-wrap justify-between gap-4">
+            {connectedPlatforms.map((platformObj) => (
+              <div key={platformObj.value} className="flex-shrink-0">
+                <PlatformToggle
+                  label={platformObj.label}
+                  platform={platformObj.value}
+                  onToggle={(isActive) => handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                />
+              </div>
             ))}
           </div>
         </div>

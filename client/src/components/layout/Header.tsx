@@ -1,44 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
-import markAiLogo from "../../assets/logo.png"; // Corrected file name to logo.png
-import { AYRSHARE, socialMedia } from "@/commons/constant";
+import markAiLogo from "../../assets/logo.png";
+import { AYRSHARE } from "@/commons/constant";
 import ConnectSocialIcon from "../ui/ConnectSocialIcon";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { useAuthStore } from "@/store/useAuthStore";
 import { generateAyrshareToken, getAyrshareSocialHandles } from "@/services/ayrShareServices";
-import { PlatformName } from "@/types";
-import { PlatformType } from '@/types/post';
-import { convertSocialHandles } from "@/commons/utils";
+import { PlatformType } from "@/types";
 
 const headerBg = "bg-[#11132f]";
 const headerBorder = "border-gray-700/50";
 
 const Header = () => {
-  const { logout, setUserSocialHandles, userSocialHandles } = useAuthStore();
-  const location = window.location.href;
-  const queryParams = new URLSearchParams(location.split('?')[1]);
-  const source = queryParams.get('source') || "";
+  const { logout, updatePlatformConnection, getEnabledPlatforms } = useAuthStore();
   const [loadingPlatform, setLoadingPlatform] = useState<string | null>(null);
+  const enabledPlatforms = getEnabledPlatforms();
 
   useEffect(() => {
-    if(source === AYRSHARE){
-      handleAyrshareSocialHandles();
-    }
-  }, [source]);
+    handleAyrshareSocialHandles();
+  }, []);
 
   const handleAyrshareSocialHandles = async () => {
      try{
       const socialMediaHandles = await getAyrshareSocialHandles();
-      setUserSocialHandles(socialMediaHandles);
+      
+      Object.entries(socialMediaHandles).forEach(([platform, isConnected]) => {
+        updatePlatformConnection(platform, isConnected as boolean);
+      });
+      
      } catch(error){
       console.error(error)
      }
   }
 
-  const handleAyrshareConnection = async (platform: string) => {
+  const handleAyrshareConnection = async (platform: PlatformType) => {
     try {
         setLoadingPlatform(platform);
-        const response = await generateAyrshareToken([platform] as PlatformName[]);
+        const response = await generateAyrshareToken([platform] as PlatformType[]);
         const currentUrl = encodeURIComponent(window.location.href);
         const hasSourceParam = window.location.href.includes(`source=${AYRSHARE}`);
         
@@ -66,20 +64,16 @@ const Header = () => {
       </Link>
 
       <div className="flex items-center gap-4 h-[50px]">
-        {socialMedia.map(({ img, label }, idx) => {
-          const isConnected = userSocialHandles[label.toLowerCase() as PlatformType]
-
-          return  (
-            <ConnectSocialIcon
-              key={img + idx}
-              image={img}
-              isConnected={isConnected}
-              label={label}
-              handleAyrshareConnection={handleAyrshareConnection}
-              isLoading={loadingPlatform === label}
-            />
-          )
-        })}
+        {enabledPlatforms.map((platform) => (
+          <ConnectSocialIcon
+            key={platform.value}
+            image={platform.img}
+            isConnected={platform.isConnected}
+            platform={platform.value}
+            handleAyrshareConnection={handleAyrshareConnection}
+            isLoading={loadingPlatform === platform.value}
+          />
+        ))}
       </div>
 
       <button

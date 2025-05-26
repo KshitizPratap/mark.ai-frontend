@@ -5,17 +5,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/useAuthStore';
 import ScheduleActionButton from "@/components/ui/schedule-action-button";
 import DatePickerWithButton from "./ui/date-picker-with-button";
-import { Post, PlatformType, PostStatus } from '@/types/post';
+import PlatformToggle from "@/components/dashboard/PlatformToggle";
+import { Post, PostStatus } from '@/types/post';
+import { PlatformType } from '@/types';
 import { ENABLE_AI_GENERATE } from '@/commons/constant';
-
-// Define platform values
-const PLATFORM_VALUES: PlatformType[] = [
-  'facebook',
-  'instagram',
-  'threads',
-  'twitter',
-  'youtube',
-];
 
 interface EditPostProps {
   isOpen: boolean;
@@ -34,16 +27,16 @@ const EditPost: React.FC<EditPostProps> = ({
   onDelete,
   onGenerate
 }) => {
-  const { timeZoneLabel = 'GMT+00:00' } = useAuthStore();
   const [editedPost, setEditedPost] = useState<Post>(post);
+  const { timeZoneLabel = 'GMT+00:00', getConnectedPlatforms } = useAuthStore();
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [generatePrompt, setGeneratePrompt] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(post.status === 'draft');
   
-  // Calendar and time selection state
   const [date, setDate] = useState<Date>(new Date(post.scheduleDate));
   
   const { toast } = useToast();
+  const connectedPlatforms = getConnectedPlatforms();
 
   useEffect(() => {
     setCharacterCount(editedPost.content.length);
@@ -68,12 +61,12 @@ const EditPost: React.FC<EditPostProps> = ({
     }));
   };
   
-  const handlePlatformToggle = (platform: PlatformType) => {
+  const handlePlatformToggle = (platform: PlatformType, isActive: boolean) => {
     setEditedPost(prev => ({
       ...prev,
-      platform: prev.platform.includes(platform)
-        ? prev.platform.filter(p => p !== platform)
-        : [...prev.platform, platform]
+      platform: isActive
+        ? [...prev.platform, platform]
+        : prev.platform.filter(p => p !== platform)
     }));
   };
 
@@ -268,25 +261,17 @@ const EditPost: React.FC<EditPostProps> = ({
               <div className="border-t border-gray-100 pt-4">
                 <h3 className="text-xs sm:text-sm text-gray-700 font-medium mb-3">Platforms</h3>
                 
-                {/* Platform toggles in a responsive grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1 sm:gap-2">
-                  {PLATFORM_VALUES.map((platform) => (
-                    <button
-                      key={platform}
-                      className={cn(
-                        "flex items-center justify-center px-1 py-1 sm:py-1.5 rounded-md text-xs font-medium transition-colors",
-                        editedPost.platform.includes(platform)
-                          ? "bg-blue-500 text-white" 
-                          : "bg-gray-100 text-gray-600",
-                        !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
-                      )}
-                      onClick={() => isEditing && handlePlatformToggle(platform)}
-                      disabled={!isEditing}
-                    >
-                      {platform === 'twitter' ? 'X' : 
-                       platform === 'gmb' ? 'Google' :
-                       platform === 'instagram' ? 'IG' : platform}
-                    </button>
+                {/* Platform toggles in a responsive layout */}
+                <div className="grid gap-4 mb-4 w-full max-w-2xl grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))]">
+                  {connectedPlatforms.map((platformObj) => (
+                    <div key={platformObj.value} className="flex-shrink-0">
+                      <PlatformToggle
+                        label={platformObj.label}
+                        platform={platformObj.value}
+                        initialState={editedPost.platform.includes(platformObj.value as PlatformType)}
+                        onToggle={(isActive) => isEditing && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -477,24 +462,16 @@ const EditPost: React.FC<EditPostProps> = ({
                   !isEditing && "opacity-50"
                 )}>
                   <h3 className="text-xs sm:text-sm text-gray-700 font-medium mb-2">Platforms</h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1 sm:gap-2 mb-4">
-                    {PLATFORM_VALUES.map((platform) => (
-                      <button
-                        key={platform}
-                        className={cn(
-                          "flex items-center justify-center px-1 sm:px-2 py-1 sm:py-1.5 rounded-md text-xs font-medium transition-colors",
-                          editedPost.platform.includes(platform)
-                            ? "bg-blue-500 text-white" 
-                            : "bg-gray-100 text-gray-600",
-                          !isEditing && "opacity-75 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
-                        )}
-                        onClick={() => isEditing && handlePlatformToggle(platform)}
-                        disabled={!isEditing}
-                      >
-                        {platform === 'twitter' ? 'X' : 
-                         platform === 'gmb' ? 'Google' :
-                         platform === 'instagram' ? 'IG' : platform}
-                      </button>
+                  <div className="grid gap-4 mb-4 w-full max-w-2xl grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))]">
+                    {connectedPlatforms.map((platformObj) => (
+                      <div key={platformObj.value} className="flex-shrink-0">
+                        <PlatformToggle
+                          label={platformObj.label}
+                          platform={platformObj.value}
+                          initialState={editedPost.platform.includes(platformObj.value as PlatformType)}
+                          onToggle={(isActive) => isEditing && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                        />
+                      </div>
                     ))}
                   </div>
 

@@ -1,24 +1,25 @@
+import { PlatformType } from "@/types";
 import React from "react";
 
 interface ConnectSocialIconProps {
   image: string;
   isConnected: boolean;
-  label: string;
-  handleAyrshareConnection: (label: string) => void;
+  platform: PlatformType;
+  handleAyrshareConnection: (platform: PlatformType) => void;
   isLoading?: boolean;
 }
 
 const ConnectSocialIcon: React.FC<ConnectSocialIconProps> = ({
   image,
   isConnected,
-  label,
+  platform,
   handleAyrshareConnection,
   isLoading = false,
 }) => {
   return (
     <div
       className="relative h-full flex items-center justify-center cursor-pointer p-[2px] rounded-full border border-gray-700"
-      onClick={() => !isLoading && handleAyrshareConnection(label)}
+      onClick={() => !isLoading && handleAyrshareConnection(platform)}
     >
       <img
         src={image}

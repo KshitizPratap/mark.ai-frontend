@@ -34,7 +34,6 @@ export const createDummyLivePost = async () => {
   try {
     let livePost = await createPost(postForDB);
     livePost = livePost.data;
-    console.log(50, livePost);
     postStore.setLivePost({
       ...livePost,
       scheduleDate: new Date(livePost.scheduleDate)

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Message } from '@/types';
-import { Post, PlatformType, PostStatus } from '@/types/post';
+import { Post, PostStatus } from '@/types/post';
 
 interface PostState {
   messages: Message[];
