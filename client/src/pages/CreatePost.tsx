@@ -114,6 +114,17 @@ const CreatePost = () => {
   };
 
   const handleSave = async (status: PostStatus) => {
+    // Check if the selected date and time is in the past
+    const now = new Date();
+    if (date && date < now) {
+      toast({
+        title: "Invalid Date/Time",
+        description: "Please select a future date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const updatedPost = {
       ...livePost,
       scheduleDate: date || new Date(),

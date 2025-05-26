@@ -118,6 +118,17 @@ const EditPost: React.FC<EditPostProps> = ({
   const handleSave = (status: PostStatus) => {
     if (!isEditing) return;
     
+    // Check if the selected date and time is in the past
+    const now = new Date();
+    if (date < now) {
+      toast({
+        title: "Invalid Date/Time",
+        description: "Please select a future date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const updatedPost = {
       ...editedPost,
       scheduleDate: date,

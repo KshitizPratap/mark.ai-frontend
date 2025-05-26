@@ -73,31 +73,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   const { userDetails= {} } = useAuthStore();
   const { name: userName = "" } = userDetails as User;
   const userInitials = userName.split(" ")[0][0] + userName.split(" ")?.pop()?.[0];
-
-  // State for handling dropdown menu
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Handler for clicking outside the dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-  // Helper for local preview
-  const [localPreviewUrl, setLocalPreviewUrl] = React.useState<string | null>(
-    null
-  );
   const [imageError, setImageError] = React.useState(false);
 
   // Reset error if imageUrl changes
@@ -105,14 +80,11 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
     setImageError(false);
   }, [imageUrl]);
 
-  // For hashtags display:
   const hashtags = hashtag ? hashtag.split(' ').filter(Boolean) : [];
 
   return (
     <div className={`flex flex-col ${className}`}>
-      {/* Post Preview Container */}
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 w-full">
-        {/* Post Header with User Info */}
         {!hideHeader && (
           <div className="px-4 py-2 border-b border-gray-100 flex items-center">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
@@ -127,9 +99,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
           </div>
         )}
 
-        {/* Post Content Area */}
         <div className="flex flex-col md:flex-row">
-          {/* Left side - Image/Video */}
           <div className="md:w-1/2 h-[300px] flex items-center justify-center bg-gray-100 border-r border-gray-100 relative">
             {isImageUploading ? (
               <div className="flex flex-col items-center text-center w-full h-full justify-center">
@@ -152,7 +122,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
                 <p className="text-sm text-gray-500">Uploading...</p>
               </div>
             ) : !uploadedImageFile || imageError ? (
-              /* If no image uploaded yet, or image failed to load, show upload option */
               <div className="flex flex-col items-center text-center w-full h-full justify-center">
                 <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
                   <svg
@@ -188,7 +157,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
                 />
               </div>
             ) : (
-              /* If image is uploaded, show it (local preview takes precedence) */
               <div className="relative w-full h-full">
                 <img
                   src={uploadedImageFile}
@@ -212,9 +180,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
             )}
           </div>
 
-          {/* Right side - Post Text Content */}
           <div className="md:w-1/2 p-5 max-h-[280px] overflow-y-auto">
-            {/* Post Title - with placeholder if missing */}
             {postTitle ? (
               <h2 className="font-bold text-lg text-gray-900 mb-2">
                 {postTitle}
@@ -225,7 +191,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
               </h2>
             )}
 
-            {/* Post Content - with placeholder if missing */}
             {postContent ? (
               <p className="text-gray-700 mb-4 text-sm">{postContent}</p>
             ) : (
@@ -235,7 +200,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
               </p>
             )}
 
-            {/* Hashtags - only show if there are any */}
             {hashtags && hashtags.length > 0 && (
               <div className="text-blue-500 text-sm space-x-1 flex flex-wrap">
                 {hashtags.map((tag, index) => (
@@ -247,7 +211,6 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
         </div>
       </div>
 
-      {/* Footer with Schedule Options */}
       {!hideFooter && (
         <div className="max-w-2xl mx-auto mt-4 flex items-center justify-end flex-wrap gap-4 w-full">
           <div className="flex items-center gap-2">

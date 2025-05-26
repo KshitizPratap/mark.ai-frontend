@@ -2,6 +2,7 @@ import React from 'react';
 import { Post } from '@/types/post';
 import { formatTime12Hour } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
+import { Image } from 'lucide-react';
 
 interface PostIndicatorProps {
   post: Post;
@@ -18,10 +19,7 @@ const PostIndicator: React.FC<PostIndicatorProps> = ({ post, onClick }) => {
 
   const postType = post.status === 'schedule' ? 'scheduled' : 'draft';
   
-  // Get first image from mediaUrl or use sample image
-  const imageUrl = post.mediaUrl.length > 0 
-    ? post.mediaUrl[0] 
-    : 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=100&h=100';
+  const imageUrl = post.mediaUrl.length > 0 && post.mediaUrl[0] 
 
   return (
     <div 
@@ -31,11 +29,13 @@ const PostIndicator: React.FC<PostIndicatorProps> = ({ post, onClick }) => {
       )}
       onClick={handleClick}
     > 
-      <img 
+      { imageUrl ? <img 
         src={imageUrl} 
         alt={post.title}
         className="w-4 h-4 rounded-sm object-cover"
       />
+    :  <Image className="w-4 h-4 text-gray-400" />
+    }
       <span className="post-time text-xs">{formatTime12Hour(post.scheduleDate)}</span>
     </div>
   );

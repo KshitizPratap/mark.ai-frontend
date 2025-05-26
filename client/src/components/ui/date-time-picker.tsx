@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
 
 interface DateTimePickerProps {
   selectedDate: Date | undefined;
@@ -16,6 +17,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   onClose,
   className = "",
 }) => {
+  const { toast } = useToast();
   // Time input states
   const [inputHour, setInputHour] = useState<string>("09");
   const [inputMinute, setInputMinute] = useState<string>("00");
@@ -75,6 +77,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     };
   }, [isOpen, onClose]);
 
+  // Check if a date is in the past
+  const isDateInPast = (date: Date): boolean => {
+    const now = new Date();
+    return date < now;
+  };
+
   // Handle date selection from calendar
   const handleSelectDate = (newDate: Date | undefined) => {
     if (newDate) {
@@ -91,6 +99,17 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
       // Set the time on the new date
       updatedDate.setHours(hours24, minutes, 0, 0);
+
+      // Check if the selected date and time is in the past
+      if (isDateInPast(updatedDate)) {
+        toast({
+          title: "Invalid Date/Time",
+          description: "Please select a future date and time.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       onDateChange(updatedDate);
     }
   };
@@ -123,6 +142,17 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     if (ampm === "AM" && hours24 === 12) hours24 = 0;
 
     updatedDate.setHours(hours24, parseInt(minute, 10), 0, 0);
+
+    // Check if the selected date and time is in the past
+    if (isDateInPast(updatedDate)) {
+      toast({
+        title: "Invalid Date/Time",
+        description: "Please select a future date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onDateChange(updatedDate);
   };
 
@@ -138,6 +168,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           mode="single"
           selected={selectedDate}
           onSelect={handleSelectDate}
+          disabled={(date) => isDateInPast(date)}
           className="rounded-md border bg-white text-gray-900 [&_button]:text-gray-900 [&_button]:bg-white [&_button:hover]:bg-gray-100 [&_button:focus]:bg-gray-200 [&_button[aria-current='date']]:bg-gray-100 [&_button[aria-selected='true']]:bg-blue-500 [&_button[aria-selected='true']]:text-white [&_button[aria-selected='true']:hover]:bg-blue-600"
         />
         <div className="mt-3 border-t pt-3">
