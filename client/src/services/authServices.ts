@@ -50,7 +50,7 @@ export const verifyToken = async () : Promise<User>=> {
     useAuthStore.getState().setTimeZoneLabel(detectUserTimezone());
     
     await createDummyLivePost();
-    return response.data.data.user;
+    return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.message || "Signup failed");
