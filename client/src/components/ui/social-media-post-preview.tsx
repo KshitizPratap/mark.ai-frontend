@@ -75,6 +75,9 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   const userInitials = userName.split(" ")[0][0] + userName.split(" ")?.pop()?.[0];
   const [imageError, setImageError] = React.useState(false);
 
+  console.log("[]", userDetails);
+  
+
   // Reset error if imageUrl changes
   React.useEffect(() => {
     setImageError(false);
