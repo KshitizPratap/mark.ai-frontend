@@ -6,6 +6,8 @@ export const BASE_URL = 'https://mark-ai-backend-1057029383450.asia-south2.run.a
 
 export const ENABLE_AI_GENERATE = false;
 
+export const ENABLE_ANALYTICS = false;
+
 export const AYRSHARE = "ayrshare";
 
 export const API_METHODS = {
