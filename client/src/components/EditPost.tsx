@@ -220,7 +220,7 @@ const EditPost: React.FC<EditPostProps> = ({
                     <img 
                       src={editedPost.mediaUrl[0]} 
                       alt="Post media" 
-                      className="object-cover w-full h-full"
+                      className="object-contain w-full h-full"
                     />
                     {editedPost.status === 'draft' && (
                       <button 
@@ -341,7 +341,7 @@ const EditPost: React.FC<EditPostProps> = ({
                       <img 
                         src={editedPost.mediaUrl[0]} 
                         alt="Post media" 
-                        className="object-cover w-full h-full"
+                        className="object-contain w-full h-full"
                       />
                       {editedPost.status === 'draft' && (
                         <button 

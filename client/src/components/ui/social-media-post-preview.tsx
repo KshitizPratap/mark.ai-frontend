@@ -9,12 +9,6 @@ import { cn } from "@/lib/utils";
 
 // Define types for component props
 interface SocialMediaPostPreviewProps {
-  // User data
-  userInitials?: string;
-  userName?: string;
-  userHandle?: string;
-  userTitle?: string;
-
   // Post content
   postTitle?: string | null;
   postContent?: string | null;
@@ -47,8 +41,6 @@ interface SocialMediaPostPreviewProps {
  */
 const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
   // User data with defaults
-  userHandle = "@steveconley",
-  userTitle = "Product Designer",
 
   // Post content with defaults
   imageUrl,
@@ -70,9 +62,21 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
 }) => {
   const {livePost} = usePostStore();
   const {content: postContent, hashtag, title: postTitle} = livePost;
-  const { userDetails= {} } = useAuthStore();
+  const { userDetails = {} } = useAuthStore();
   const { name: userName = "" } = userDetails as User;
-  const userInitials = userName.split(" ")[0][0] + userName.split(" ")?.pop()?.[0];
+  
+  const formattedUserName = userName
+    .split(' ')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+  
+  const userInitials = userName
+    .split(' ')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase())
+    .join('') || 'U';
+  
   const [imageError, setImageError] = React.useState(false);
 
   console.log("[]", userDetails);
@@ -94,10 +98,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
               {userInitials}
             </div>
             <div>
-              <h3 className="font-medium text-sm text-gray-900">{userName}</h3>
-              <p className="text-xs text-gray-500">
-                {userHandle} • {userTitle}
-              </p>
+              <h3 className="font-medium text-sm text-gray-900">{formattedUserName}</h3>
             </div>
           </div>
         )}

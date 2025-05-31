@@ -139,6 +139,24 @@ const CreatePost = () => {
     }, 500);
   };
 
+  const handleSchedule = async () => {
+    const currentPlatforms = Array.isArray(platform) ? platform : [];
+    if (currentPlatforms.length === 0) {
+      toast({
+        title: "Select Platform",
+        description: "Please select at least one platform to schedule your post.",
+        variant: "default",
+      });
+      return;
+    }
+    
+    await handleSave('schedule');
+  };
+
+  const handleDraft = async () => {
+    await handleSave('draft');
+  };
+
   const previewPanelBg = "bg-gray-100";
   
   return (
@@ -158,6 +176,7 @@ const CreatePost = () => {
                   label={platformObj.label}
                   platform={platformObj.value}
                   onToggle={(isActive) => handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                  initialState={Array.isArray(platform) ? platform.includes(platformObj.value) : false}
                 />
               </div>
             ))}
@@ -185,13 +204,9 @@ const CreatePost = () => {
         <div className={`flex-1 overflow-y-auto bg-white`}>
           <div className="p-6">
             <SocialMediaPostPreview
-              userInitials="SC"
-              userName="Stephen Conley"
-              userHandle="@steveconley"
-              userTitle="Product Designer"
               scheduledDate={scheduleDate}
-              onSchedule={() => handleSave('schedule')}
-              onDraft={() => handleSave('draft')}
+              onSchedule={handleSchedule}
+              onDraft={handleDraft}
               onDateChange={handleDateChange}
               hideFooter={false}
               onImageUpload={handleImageUpload}
