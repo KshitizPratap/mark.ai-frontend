@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { Message } from '@/types';
 import { Post, PostStatus } from '@/types/post';
+import { getChatHistory, transformChatHistoryToMessages } from '@/services/chatServices';
 
 interface PostState {
   messages: Message[];
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void;
+  loadChatHistory: () => Promise<void>;
   isThinking: boolean;
   setIsThinking: (isThinking: boolean) => void;
 
@@ -44,6 +46,17 @@ export const usePostStore = create<PostState>((set) => ({
     messages: typeof messages === 'function' ? messages(state.messages) : messages
   })),
   setIsThinking: (isThinking) => set({ isThinking }),
+
+  loadChatHistory: async () => {
+    try {
+      const chatHistoryResponse = await getChatHistory();
+      const transformedMessages = transformChatHistoryToMessages(chatHistoryResponse);
+      set({ messages: transformedMessages });
+    } catch (error) {
+      console.error('Failed to load chat history:', error);
+      // Optionally set an error state or show a notification
+    }
+  },
 
   // Post state actions
   setLivePost: (newPostState) => set((state) => ({

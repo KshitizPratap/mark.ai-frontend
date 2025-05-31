@@ -1,5 +1,6 @@
 import { MessageType } from "@/components/ChatInterface";
 import { AyrsharePlatformDetails, PostType, PlatformType } from "@/types";
+import { SocialIconComponents } from "@/assets/icons/social/SocialIcons";
 
 // export const BASE_URL = "http://localhost:5000";
 export const BASE_URL = 'https://mark-ai-backend-1057029383450.asia-south2.run.app';
@@ -66,14 +67,14 @@ export const initialSocialPlatforms: AyrsharePlatformDetails[] = [
     value: "bluesky",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.bluesky
   },
   {
     label: "Facebook",
     value: "facebook",
     isConnected: false,
     isEnabled: true,
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjvzC_QRv6moAhgNb5C6e3yicKgFND1g2RwA&s"
+    img: SocialIconComponents.facebook
   },
   {
     label: "Gmb",
@@ -87,62 +88,62 @@ export const initialSocialPlatforms: AyrsharePlatformDetails[] = [
     value: "instagram",
     isConnected: true,
     isEnabled: true,
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png"
+    img: SocialIconComponents.instagram
   },
   {
     label: "Linkedin",
     value: "linkedin",
     isConnected: true,
     isEnabled: true,
-    img: "https://1000logos.net/wp-content/uploads/2017/03/Color-of-the-LinkedIn-Logo.jpg"
+    img: SocialIconComponents.linkedin
   },
   {
     label: "Pinterest",
     value: "pinterest",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.pinterest
   },
   {
     label: "Reddit",
     value: "reddit",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.reddit
   },
   {
     label: "Telegram",
     value: "telegram",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.telegram
   },
   {
     label: "Threads",
     value: "threads",
     isConnected: true,
     isEnabled: true,
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmOQT83dtIlgCmJiM8X08gAFfHSDkuxBXA1Q&s"
+    img: SocialIconComponents.threads
   },
   {
     label: "Tiktok",
     value: "tiktok",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.tiktok
   },
   {
     label: "Twitter",
     value: "twitter",
     isConnected: false,
     isEnabled: true,
-    img: "https://pngdownload.io/wp-content/uploads/2023/12/X-Logo-Twitter-Logo-Iconic-Social-Media-Brand-Symbol-PNG-Transparent-Recognizable-Emblem-jpg.webp"
+    img: SocialIconComponents.twitter
   },
   {
     label: "Youtube",
     value: "youtube",
     isConnected: false,
     isEnabled: false,
-    img: ""
+    img: SocialIconComponents.youtube
   }
 ];

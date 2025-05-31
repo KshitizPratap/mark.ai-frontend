@@ -16,10 +16,12 @@ const ChatPanel = () => {
     setLivePost,
     setMessages,
     livePost,
+    loadChatHistory,
   } = usePostStore();
   
   const [inputValue, setInputValue] = React.useState("");
   const [isWaitingForResponse, setIsWaitingForResponse] = React.useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = React.useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const {isAuth} = useAuthStore();
 
@@ -33,13 +35,31 @@ const ChatPanel = () => {
   const userChatBubbleBg = "bg-white";
   const userChatBubbleText = "text-gray-700";
 
-  // Initialize chat with first AI message
+  // Load chat history on component mount
   useEffect(() => {
-    if (messages && messages.length === 0 && isAuth) {
+    const loadHistory = async () => {
+      if (isAuth) {
+        setIsLoadingHistory(true);
+        try {
+          await loadChatHistory();
+        } catch (error) {
+          console.error('Failed to load chat history:', error);
+        } finally {
+          setIsLoadingHistory(false);
+        }
+      }
+    };
+
+    loadHistory();
+  }, [isAuth, loadChatHistory]);
+
+  // Initialize chat with first AI message only if no history exists
+  useEffect(() => {
+    if (messages && messages.length === 0 && isAuth && !isLoadingHistory) {
       setIsThinking(true);
       handleChatResponse(initialiseChatWithMark);
     }
-  }, [isAuth]);
+  }, [isAuth, messages.length, isLoadingHistory]);
 
   useEffect(() => {
     const scrollTimeout = setTimeout(() => {
@@ -183,42 +203,62 @@ const ChatPanel = () => {
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar"
       >
-        {(messages || []).map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-[80%] shadow-md text-sm ${
-                message.sender === "user"
-                  ? `${userChatBubbleBg} ${userChatBubbleText}`
-                  : `${chatBubbleGradient} text-white`
-              }`}
-            >
-              {renderMessageContent(message.text)}
-            </div>
-          </div>
-        ))}
-
-        {isThinking && (
-          <div className="flex justify-start">
-            <div
-              className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-[80%] shadow-md text-sm ${chatBubbleGradient} text-white`}
-            >
+        {isLoadingHistory ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="flex flex-col items-center space-y-2">
               <ThreeDots
                 visible={true}
-                height="20"
-                width="40"
-                color="#fff"
+                height="30"
+                width="60"
+                color="#3b82f6"
                 radius="9"
-                ariaLabel="three-dots-loading"
+                ariaLabel="loading-chat-history"
                 wrapperStyle={{}}
                 wrapperClass=""
               />
+              <span className="text-gray-400 text-sm">Loading chat history...</span>
             </div>
           </div>
+        ) : (
+          <>
+            {(messages || []).map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-[80%] shadow-md text-sm ${
+                    message.sender === "user"
+                      ? `${userChatBubbleBg} ${userChatBubbleText}`
+                      : `${chatBubbleGradient} text-white`
+                  }`}
+                >
+                  {renderMessageContent(message.text)}
+                </div>
+              </div>
+            ))}
+
+            {isThinking && (
+              <div className="flex justify-start">
+                <div
+                  className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-[80%] shadow-md text-sm ${chatBubbleGradient} text-white`}
+                >
+                  <ThreeDots
+                    visible={true}
+                    height="20"
+                    width="40"
+                    color="#fff"
+                    radius="9"
+                    ariaLabel="three-dots-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

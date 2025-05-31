@@ -9,6 +9,7 @@ import PlatformToggle from "@/components/dashboard/PlatformToggle";
 import { Post, PostStatus } from '@/types/post';
 import { PlatformType } from '@/types';
 import { ENABLE_AI_GENERATE } from '@/commons/constant';
+import { uploadSingleMedia } from "@/services/uploadServices";
 
 interface EditPostProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ const EditPost: React.FC<EditPostProps> = ({
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [generatePrompt, setGeneratePrompt] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(post.status === 'draft');
+  const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
   
   const [date, setDate] = useState<Date>(new Date(post.scheduleDate));
   
@@ -91,6 +93,36 @@ const EditPost: React.FC<EditPostProps> = ({
       ...prev,
       mediaUrl: prev.mediaUrl.filter((_, i) => i !== index)
     }));
+  };
+
+  // Image upload handler using uploadSingleMedia
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsImageUploading(true);
+      try {
+        const response = await uploadSingleMedia(file);
+        
+        setEditedPost(prev => ({
+          ...prev,
+          mediaUrl: [response]
+        }));
+        
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        });
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+      } finally {
+        setIsImageUploading(false);
+      }
+    }
   };
 
   const handleGenerate = () => {
@@ -204,25 +236,42 @@ const EditPost: React.FC<EditPostProps> = ({
                     "flex flex-col items-center justify-center h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 rounded-lg border-2 border-dashed border-gray-300",
                     isEditing ? "bg-gray-100 cursor-pointer hover:bg-gray-200" : "bg-gray-50"
                   )}>
-                    {isEditing ? (
+                    {isImageUploading ? (
+                      <div className="flex flex-col items-center text-center w-full h-full justify-center">
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2 animate-spin">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-gray-500"
+                          >
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                          </svg>
+                        </div>
+                        <p className="text-sm text-gray-500">Uploading...</p>
+                      </div>
+                    ) : isEditing ? (
                       <>
                         <PlusCircle className="w-8 h-8 sm:w-10 sm:h-10 mb-2 text-gray-400" />
                         <p className="text-xs sm:text-sm text-gray-500">Click to upload media</p>
-                        <input 
-                          type="file" 
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const url = URL.createObjectURL(file);
-                              setEditedPost(prev => ({
-                                ...prev,
-                                mediaUrl: [...prev.mediaUrl, url]
-                              }));
-                            }
-                          }}
-                        />
+                        <label 
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isImageUploading}
+                          />
+                        </label>
                       </>
                     ) : (
                       <>
@@ -264,12 +313,15 @@ const EditPost: React.FC<EditPostProps> = ({
                 {/* Platform toggles in a responsive layout */}
                 <div className="grid gap-4 mb-4 w-full max-w-2xl grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))]">
                   {connectedPlatforms.map((platformObj) => (
-                    <div key={platformObj.value} className="flex-shrink-0">
+                    <div key={platformObj.value} className={cn(
+                      "flex-shrink-0",
+                      editedPost.status === 'schedule' && "opacity-50 cursor-not-allowed"
+                    )}>
                       <PlatformToggle
                         label={platformObj.label}
                         platform={platformObj.value}
                         initialState={editedPost.platform.includes(platformObj.value as PlatformType)}
-                        onToggle={(isActive) => isEditing && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                        onToggle={(isActive) => isEditing && editedPost.status !== 'schedule' && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
                       />
                     </div>
                   ))}
@@ -308,7 +360,27 @@ const EditPost: React.FC<EditPostProps> = ({
                       "flex flex-col items-center justify-center h-48 sm:h-56 rounded-lg border-2 border-dashed border-gray-300",
                       isEditing ? "bg-gray-100 cursor-pointer hover:bg-gray-200" : "bg-gray-50"
                     )}>
-                      {isEditing ? (
+                      {isImageUploading ? (
+                        <div className="flex flex-col items-center text-center w-full h-full justify-center">
+                          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2 animate-spin">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-gray-500"
+                            >
+                              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                            </svg>
+                          </div>
+                          <p className="text-sm text-gray-500">Uploading...</p>
+                        </div>
+                      ) : isEditing ? (
                         <>
                           <PlusCircle className="w-8 h-8 sm:w-10 sm:h-10 mb-2 text-gray-400" />
                           <p className="text-xs sm:text-sm text-gray-500">Click to upload media</p>
@@ -320,17 +392,8 @@ const EditPost: React.FC<EditPostProps> = ({
                               type="file" 
                               className="hidden" 
                               accept="image/*"
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const url = URL.createObjectURL(file);
-                                  setEditedPost(prev => ({
-                                    ...prev,
-                                    mediaUrl: [...prev.mediaUrl, url]
-                                  }));
-                                }
-                              }}
+                              onChange={handleImageUpload}
+                              disabled={isImageUploading}
                             />
                           </label>
                         </>
@@ -464,12 +527,15 @@ const EditPost: React.FC<EditPostProps> = ({
                   <h3 className="text-xs sm:text-sm text-gray-700 font-medium mb-2">Platforms</h3>
                   <div className="grid gap-4 mb-4 w-full max-w-2xl grid-cols-[repeat(auto-fit,_minmax(140px,_1fr))]">
                     {connectedPlatforms.map((platformObj) => (
-                      <div key={platformObj.value} className="flex-shrink-0">
+                      <div key={platformObj.value} className={cn(
+                        "flex-shrink-0",
+                        editedPost.status === 'schedule' && "opacity-50 cursor-not-allowed"
+                      )}>
                         <PlatformToggle
                           label={platformObj.label}
                           platform={platformObj.value}
                           initialState={editedPost.platform.includes(platformObj.value as PlatformType)}
-                          onToggle={(isActive) => isEditing && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
+                          onToggle={(isActive) => isEditing && editedPost.status !== 'schedule' && handlePlatformToggle(platformObj.value as PlatformType, isActive)}
                         />
                       </div>
                     ))}
@@ -533,8 +599,8 @@ const EditPost: React.FC<EditPostProps> = ({
                     <ScheduleActionButton
                       onSchedule={() => isEditing && handleSave('schedule')}
                       onDraft={() => isEditing && handleSave('draft')}
-                      className={!isEditing ? "opacity-70" : ""}
-                      disabled={!isEditing}
+                      className={(!isEditing || isImageUploading) ? "opacity-70 cursor-not-allowed" : ""}
+                      disabled={!isEditing || isImageUploading}
                     />
                   </div>
                 )}
@@ -686,8 +752,8 @@ const EditPost: React.FC<EditPostProps> = ({
                     <ScheduleActionButton
                       onSchedule={() => isEditing && handleSave('schedule')}
                       onDraft={() => isEditing && handleSave('draft')}
-                      className={!isEditing ? "opacity-70" : ""}
-                      disabled={!isEditing}
+                      className={(!isEditing || isImageUploading) ? "opacity-70 cursor-not-allowed" : ""}
+                      disabled={!isEditing || isImageUploading}
                     />
                   </div>
                 )}

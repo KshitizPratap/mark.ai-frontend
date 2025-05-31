@@ -67,7 +67,6 @@ const Header = () => {
         {enabledPlatforms.map((platform) => (
           <ConnectSocialIcon
             key={platform.value}
-            image={platform.img}
             isConnected={platform.isConnected}
             platform={platform.value}
             handleAyrshareConnection={handleAyrshareConnection}

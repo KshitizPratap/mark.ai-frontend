@@ -47,3 +47,10 @@ export interface GenerateAyrshareTokenResponse {
     emailSent: boolean;
     expiresIn: string;
 }
+
+export interface ChatHistoryMessage {
+  sender_first_name: string;
+  text_content: string;
+}
+
+export type ChatHistoryResponse = ChatHistoryMessage[];
