@@ -206,7 +206,7 @@ const SocialMediaPostPreview: React.FC<SocialMediaPostPreviewProps> = ({
             {hashtags && hashtags.length > 0 && (
               <div className="text-blue-500 text-sm space-x-1 flex flex-wrap">
                 {hashtags.map((tag, index) => (
-                  <span key={index}>{tag}</span>
+                  <span key={index}>#{tag}</span>
                 ))}
               </div>
             )}
